@@ -1,0 +1,84 @@
+<div class="page space-y-6">
+  <div
+    class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="h1">Tournament Arena</h1>
+      <p class="text-xs text-[#8a7d63] mt-1">Browse and register for live and
+        scheduled Free Fire competitive tournaments</p>
+    </div>
+    <a
+      href="/matches?mode=<%= filters.mode %>&format=<%= filters.format %>&status=<%= filters.status %>"
+      class="inline-flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3.5 py-2 text-xs font-bold text-amber-300 hover:bg-amber-500/10 hover:border-amber-400 transition">
+      <%- icon('refresh-cw', 'h-3.5 w-3.5') %> Refresh Tournaments
+    </a>
+  </div>
+
+  <form method="get" action="/matches"
+    class="rounded-xl border border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-4 space-y-3">
+    <div
+      class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#8a7d63] mb-1">
+      <%- icon('filter', 'h-3.5 w-3.5 text-amber-400') %> Filter Tournaments
+    </div>
+    <div class="flex flex-wrap gap-1.5">
+      <% const chip = (on) => on ?
+      'bg-gradient-to-b from-amber-300 to-amber-500 text-black shadow-[0_0_20px_-5px_rgba(245,200,66,0.7)] border border-amber-400'
+      :
+      'bg-black/60 border border-white/10 text-[#e8dfc9] hover:border-amber-500/40 hover:text-amber-300';
+      %>
+      <a
+        href="/matches?mode=ALL&format=<%= filters.format %>&status=<%= filters.status %>"
+        class="rounded-lg px-3 py-1.5 text-xs font-bold transition <%= chip(filters.mode === 'ALL') %>">All
+        Modes</a>
+      <% modes.forEach(function (m) { %>
+      <a
+        href="/matches?mode=<%= m.slug %>&format=<%= filters.format %>&status=<%= filters.status %>"
+        class="rounded-lg px-3 py-1.5 text-xs font-bold transition <%= chip(filters.mode === m.slug) %>"><%=
+        m.name %></a>
+      <% }) %>
+    </div>
+    <input type="hidden" name="mode" value="<%= filters.mode %>">
+    <div class="flex flex-wrap gap-3 pt-2 border-t border-amber-500/15">
+      <label
+        class="flex items-center gap-2 text-xs text-[#8a7d63] font-semibold">Format:
+        <select name="format" data-autosubmit
+          class="rounded-lg border border-amber-500/20 bg-black/60 px-3 py-1.5 text-xs font-medium text-white focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20">
+          <option value="ALL">All Formats</option>
+          <% formats.forEach(function (f) { %>
+          <option value="<%= f %>" <%=filters.format === f ? 'selected' : ''
+            %>><%= f %></option>
+          <% }) %>
+        </select>
+      </label>
+      <label
+        class="flex items-center gap-2 text-xs text-[#8a7d63] font-semibold">Status:
+        <select name="status" data-autosubmit
+          class="rounded-lg border border-amber-500/20 bg-black/60 px-3 py-1.5 text-xs font-medium text-white focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20">
+          <% statuses.forEach(function (s) { %>
+          <option value="<%= s.value %>" <%=filters.status === s.value ?
+            'selected' : '' %>><%= s.label %></option>
+          <% }) %>
+        </select>
+      </label>
+      <noscript><button
+          class="btn-ghost border-amber-500/30 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400"
+          type="submit">Apply</button></noscript>
+    </div>
+  </form>
+
+  <% if (!matches.length) { %>
+  <div
+    class="rounded-2xl border border-amber-500/20 bg-black/60 backdrop-blur-sm p-12 text-center">
+    <%- icon('swords', 'mx-auto h-12 w-12 text-amber-500/40 mb-3') %>
+    <h3 class="font-bold text-lg text-white">No Tournaments Found</h3>
+    <p class="text-xs text-[#8a7d63] mt-1 max-w-sm mx-auto">Try adjusting your
+      filters or check back shortly as new competitive rooms are scheduled
+      constantly.</p>
+  </div>
+  <% } else { %>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <% matches.forEach(function (m) { %>
+    <%- include('partials/match-card', { m: m }) %>
+    <% }) %>
+  </div>
+  <% } %>
+</div>

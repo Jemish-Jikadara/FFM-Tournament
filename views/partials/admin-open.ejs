@@ -1,0 +1,44 @@
+<div class="min-h-screen bg-black">
+  <!-- ============================================================
+       ADMIN TOP BAR
+       ============================================================ -->
+  <div class="border-b border-amber-500/25 bg-amber-500/[0.05] px-4 py-2.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div
+        class="flex items-center gap-2 text-xs font-extrabold text-amber-400 tracking-wider">
+        <%- icon('shield', 'h-4 w-4') %>
+        <span>ADMINISTRATIVE CONTROL CENTER</span>
+        <span
+          class="rounded bg-amber-500/20 border border-amber-500/30 px-2 py-0.5 text-[10px] text-amber-300 font-mono">
+          <%= user.role %>
+        </span>
+      </div>
+      <a href="/dashboard"
+        class="text-xs font-bold text-[#8a7d63] hover:text-amber-400 flex items-center gap-1 transition">
+        <%- icon('arrow-left', 'h-3.5 w-3.5') %> Back to Player App
+      </a>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       LAYOUT: SIDEBAR + CONTENT
+       ============================================================ -->
+  <div
+    class="max-w-7xl mx-auto flex flex-col md:flex-row gap-6 p-4 sm:p-6 lg:p-8">
+
+    <!-- SIDEBAR NAV -->
+    <aside class="w-full md:w-60 shrink-0 space-y-1">
+      <% adminNav.forEach(function (n) { %>
+      <a href="<%= n.href %>"
+        class="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-bold transition
+          <%= active === n.key
+              ? 'bg-gradient-to-b from-amber-300 to-amber-500 text-black shadow-[0_0_24px_-6px_rgba(245,200,66,0.9)] border border-amber-400'
+              : 'text-[#a89878] border border-transparent hover:bg-amber-500/[0.06] hover:text-amber-300 hover:border-amber-500/20' %>">
+        <%- icon(n.icon, 'h-4 w-4 shrink-0') %>
+        <span><%= n.label %></span>
+      </a>
+      <% }) %>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 min-w-0 space-y-6">

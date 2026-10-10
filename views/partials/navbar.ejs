@@ -1,0 +1,104 @@
+<%
+const links = [
+{ name: 'Matches', href: '/matches', icon: 'swords' },
+{ name: 'My Matches', href: '/my-matches', icon: 'flame' },
+{ name: 'Leaderboard', href: '/leaderboard', icon: 'trophy' },
+{ name: 'Wallet', href: '/wallet', icon: 'wallet' },
+];
+const isActive = (h) => path === h || (h !== '/' && path.startsWith(h + '/'));
+%>
+<header
+  class="sticky top-0 z-50 w-full border-b border-amber-500/20 bg-black/80 backdrop-blur-md">
+  <div
+    class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
+
+    <!-- Brand -->
+    <a href="/" class="flex items-center gap-2.5">
+      <div class="flex h-9 w-9 items-center justify-center">
+        <img src="/img/logo.png" alt="FFM" class="w-full h-full object-contain"
+          draggable="false" />
+      </div>
+      <span class="font-black tracking-tight text-white text-base">
+        FFM <span class="text-amber-400">Arena</span>
+      </span>
+    </a>
+
+    <!-- Desktop nav -->
+    <nav class="hidden md:flex items-center gap-1">
+      <% links.forEach(function (l) { %>
+      <a href="<%= l.href %>"
+        class="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded transition-colors
+                  <%= isActive(l.href)
+                      ? 'text-amber-400 bg-amber-500/10'
+                      : 'text-slate-400 hover:text-white hover:bg-white/5' %>">
+        <%- icon(l.icon, 'h-3.5 w-3.5') %>
+        <%= l.name %>
+      </a>
+      <% }) %>
+
+      <% if (user && user.isStaff()) { %>
+      <a href="<%= user.isAdmin() ? '/admin/dashboard' : '/admin/disputes' %>"
+        class="ml-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded border transition-colors
+                  <%= path.startsWith('/admin')
+                      ? 'border-amber-500 bg-amber-500/10 text-amber-400'
+                      : 'border-amber-500/20 bg-amber-500/5 text-slate-400 hover:text-amber-400 hover:border-amber-500/50' %>">
+        <%- icon('shield', 'h-3 w-3') %>
+        Admin
+      </a>
+      <% } %>
+    </nav>
+
+    <!-- Right actions -->
+    <div class="flex items-center gap-2">
+
+      <% if (user) { %>
+      <!-- Wallet balance -->
+      <a href="/wallet"
+        class="hidden sm:flex items-center gap-1.5 rounded border border-amber-500/30 bg-amber-500/5 px-3 py-1.5 text-sm font-bold text-amber-300 hover:border-amber-400 hover:bg-amber-500/10 transition">
+        <%- icon('wallet', 'h-3.5 w-3.5 text-amber-400') %>
+        <span class="tabular-nums"><%= paise(wallet ?
+          wallet.availableBalancePaise + wallet.winningBalancePaise : 0)
+          %></span>
+      </a>
+
+      <!-- Notifications -->
+      <a href="/notifications" title="Notifications"
+        class="relative flex h-9 w-9 items-center justify-center rounded border border-white/10 bg-[#141416] text-slate-300 hover:text-amber-400 hover:border-amber-500/40 transition">
+        <%- icon('bell', 'h-4 w-4') %>
+        <% if (unread > 0) { %>
+        <span
+          class="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-amber-500 px-1 text-[10px] font-black text-black">
+          <%= unread > 9 ? '9+' : unread %>
+        </span>
+        <% } %>
+      </a>
+
+      <!-- Profile -->
+      <a href="/profile"
+        class="hidden sm:flex items-center gap-2 rounded border border-white/10 bg-[#141416] px-3 py-1.5 text-sm font-semibold text-white hover:border-amber-500/40 transition">
+        <%- icon('user', 'h-3.5 w-3.5 text-amber-400') %>
+        <span class="truncate max-w-[100px]"><%= user.shownName() %></span>
+      </a>
+
+      <!-- Logout -->
+      <form method="post" action="/logout">
+        <button type="submit" title="Logout"
+          class="flex h-9 w-9 items-center justify-center rounded border border-white/10 bg-[#141416] text-slate-400 hover:text-amber-400 hover:border-amber-500/40 transition cursor-pointer">
+          <%- icon('log-out', 'h-4 w-4') %>
+        </button>
+      </form>
+
+      <% } else { %>
+      <a href="/login"
+        class="text-sm font-semibold text-slate-300 hover:text-white px-3 py-1.5 transition">
+        Sign In
+      </a>
+      <a href="/register"
+        class="rounded bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 px-4 py-1.5 text-sm font-black text-black transition shadow-[0_0_20px_-5px_rgba(245,200,66,0.7)]">
+        Register
+      </a>
+      <% } %>
+
+    </div>
+  </div>
+</header>

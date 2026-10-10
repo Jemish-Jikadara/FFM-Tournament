@@ -1,0 +1,39 @@
+<%- include('../partials/admin-open') %>
+<div>
+  <h1 class="h1">Risk Telemetry</h1>
+  <p class="text-xs text-[#8a7d63] mt-1">Accounts and payments that may need
+    attention</p>
+</div>
+
+<% if (!flags.length) { %>
+<div
+  class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-12 text-center">
+  <%- icon('shield-check', 'mx-auto h-10 w-10 text-amber-400 mb-3') %>
+  <p class="text-sm font-semibold text-[#e8dfc9]">No risk flags right now.</p>
+</div>
+<% } else { %>
+<div class="space-y-3">
+  <% flags.forEach(function (f) { %>
+  <div
+    class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-4 flex flex-wrap items-center justify-between gap-2 text-xs">
+    <div class="flex items-center gap-3">
+
+      <!-- Level badge — kept functional colors -->
+      <span
+        class="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase <%= f.level === 'HIGH' ? stateBadge('BANNED') : stateBadge('PENDING') %>">
+        <%= f.level %>
+      </span>
+
+      <div>
+        <span class="font-mono font-bold text-white"><%= f.type %></span><br>
+        <span class="text-[#a89878]"><%= f.detail %></span>
+      </div>
+    </div>
+
+    <span class="text-[#8a7d63] font-mono"><%= f.user ? f.user.email : 'unknown'
+      %></span>
+  </div>
+  <% }) %>
+</div>
+<% } %>
+<%- include('../partials/admin-close') %>

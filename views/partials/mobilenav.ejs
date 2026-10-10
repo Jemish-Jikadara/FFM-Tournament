@@ -1,0 +1,23 @@
+<%
+const items = [
+{ label: 'Matches', href: '/matches', icon: 'swords' },
+{ label: 'My Matches', href: '/my-matches', icon: 'flame' },
+{ label: 'Ranks', href: '/leaderboard', icon: 'trophy' },
+{ label: 'Wallet', href: '/wallet', icon: 'wallet' },
+{ label: 'Profile', href: '/profile', icon: 'user' },
+];
+%>
+<nav
+  class="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-amber-500/20 bg-black/95 backdrop-blur-md">
+  <div class="flex h-16 items-center justify-around px-2">
+    <% items.forEach(function (i) { const on = path === i.href ||
+    path.startsWith(i.href + '/'); %>
+    <a href="<%= i.href %>"
+      class="flex flex-col items-center justify-center w-full py-1 transition-colors
+        <%= on ? 'text-amber-400 font-semibold' : 'text-[#8a7d63] hover:text-amber-300' %>">
+      <%- icon(i.icon, 'h-5 w-5 mb-0.5') %>
+      <span class="text-[10px] tracking-tight"><%= i.label %></span>
+    </a>
+    <% }) %>
+  </div>
+</nav>

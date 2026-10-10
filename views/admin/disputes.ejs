@@ -1,0 +1,73 @@
+<%- include('../partials/admin-open') %>
+<div>
+  <h1 class="h1">Disputes</h1>
+  <p class="text-xs text-[#8a7d63] mt-1">Player-reported issues</p>
+</div>
+
+<div class="flex gap-2">
+  <% ['OPEN', 'RESOLVED', 'REJECTED'].forEach(function (s) { %>
+  <a href="/admin/disputes?status=<%= s %>"
+    class="rounded-lg px-4 py-2 text-xs font-bold transition
+      <%= status === s
+          ? 'bg-gradient-to-b from-amber-300 to-amber-500 text-black border border-amber-400 shadow-[0_0_20px_-5px_rgba(245,200,66,0.7)]'
+          : 'bg-black/60 border border-white/10 text-[#e8dfc9] hover:border-amber-500/40 hover:text-amber-300' %>">
+    <%= s %>
+  </a>
+  <% }) %>
+</div>
+
+<% if (!disputes.length) { %>
+<div
+  class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-10 text-center text-xs text-[#8a7d63]">
+  No <%= status.toLowerCase() %> disputes.
+</div>
+<% } %>
+
+<div class="space-y-3">
+  <% disputes.forEach(function (d) { %>
+  <div class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-5">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-2 text-xs">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="font-bold text-white"><%= d.type.replace('_', ' ')
+          %></span>
+        <% if (d.match) { %>
+        <a href="/matches/<%= d.match._id %>"
+          class="font-mono text-amber-400 hover:text-amber-300 transition"><%=
+          d.match.publicMatchCode %></a>
+        <% } %>
+        <span class="text-[#8a7d63]">
+          by <%= d.user ? ((d.user.profile && d.user.profile.displayName) ||
+          d.user.email) : 'deleted user' %>
+          · <%= date(d.createdAt) %>
+        </span>
+      </div>
+      <span
+        class="rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider <%= stateBadge(d.status) %>"><%=
+        d.status %></span>
+    </div>
+
+    <p class="text-xs text-[#a89878] whitespace-pre-line"><%= d.description
+      %></p>
+
+    <% if (d.status === 'OPEN') { %>
+    <form method="post" action="/admin/disputes/<%= d._id %>/resolve"
+      class="mt-4 flex flex-wrap gap-2 items-center">
+      <input name="resolution" required minlength="3" maxlength="500"
+        placeholder="Resolution note shown to the player"
+        class="input flex-1 min-w-[200px] !py-2">
+      <button name="status" value="RESOLVED"
+        class="btn-primary bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black border border-amber-400 shadow-[0_0_20px_-5px_rgba(245,200,66,0.7)]"
+        type="submit">Resolve</button>
+      <button name="status" value="REJECTED" class="btn-danger"
+        type="submit">Reject</button>
+    </form>
+    <% } else if (d.resolution) { %>
+    <p
+      class="mt-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs text-[#e8dfc9]">
+      <strong class="text-emerald-400">Resolution:</strong> <%= d.resolution %>
+    </p>
+    <% } %>
+  </div>
+  <% }) %>
+</div>
+<%- include('../partials/admin-close') %>

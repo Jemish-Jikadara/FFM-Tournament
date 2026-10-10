@@ -1,0 +1,40 @@
+<%- include('../partials/admin-open') %>
+<div>
+  <h1 class="h1">Audit Logs</h1>
+  <p class="text-xs text-[#8a7d63] mt-1">Last 200 admin actions</p>
+</div>
+
+<div
+  class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm overflow-hidden">
+  <% if (!logs.length) { %>
+  <div class="p-10 text-center text-xs text-[#8a7d63]">No admin actions recorded
+    yet.</div>
+  <% } else { %>
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead class="bg-black/60 border-b border-amber-500/20">
+        <tr>
+          <th class="th text-amber-400">When</th>
+          <th class="th text-amber-400">Admin</th>
+          <th class="th text-amber-400">Action</th>
+          <th class="th text-amber-400">Target</th>
+          <th class="th text-amber-400">Details</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-amber-500/10">
+        <% logs.forEach(function (l) { %>
+        <tr class="hover:bg-amber-500/[0.03] transition">
+          <td class="td whitespace-nowrap text-[#a89878]"><%= date(l.createdAt)
+            %></td>
+          <td class="td text-[#e8dfc9]"><%= l.actorEmail %></td>
+          <td class="td font-mono font-bold text-amber-400"><%= l.action %></td>
+          <td class="td font-mono text-[#a89878]"><%= l.target %></td>
+          <td class="td text-[#a89878]"><%= l.details %></td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+<%- include('../partials/admin-close') %>

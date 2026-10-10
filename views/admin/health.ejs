@@ -1,0 +1,80 @@
+<%- include('../partials/admin-open') %>
+<div>
+  <h1 class="h1">Live System Health</h1>
+  <p class="text-xs text-[#8a7d63] mt-1">Server and database status (refresh the
+    page to update)</p>
+</div>
+
+<%
+const dbOk = info.dbState === 'connected';
+const up = info.uptime;
+const upTxt = Math.floor(up / 3600) + 'h ' + Math.floor((up % 3600) / 60) + 'm '
++ (up % 60) + 's';
+%>
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+  <!-- DATABASE CARD (conditional color) -->
+  <div
+    class="rounded-xl border p-5 <%= dbOk ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-rose-500/30 bg-rose-500/5' %>">
+    <span
+      class="text-[11px] font-bold uppercase tracking-wider text-[#8a7d63]">Database</span>
+    <div
+      class="text-xl font-black mt-1 uppercase <%= dbOk ? 'text-emerald-400' : 'text-rose-400' %>">
+      <%= info.dbState %>
+    </div>
+    <div class="text-xs text-[#8a7d63] mt-1">
+      Ping: <%= info.pingMs === null ? 'n/a' : info.pingMs + ' ms' %>
+    </div>
+  </div>
+
+  <!-- WEB SERVER CARD -->
+  <div class="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-5">
+    <span
+      class="text-[11px] font-bold uppercase tracking-wider text-[#8a7d63]">Web
+      Server</span>
+    <div class="text-xl font-black mt-1 text-emerald-400">ONLINE</div>
+    <div class="text-xs text-[#8a7d63] mt-1">Uptime: <%= upTxt %></div>
+  </div>
+
+  <!-- MEMORY CARD -->
+  <div
+    class="rounded-xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-5">
+    <span
+      class="text-[11px] font-bold uppercase tracking-wider text-[#8a7d63]">Memory</span>
+    <div class="text-xl font-black mt-1 text-white"><%= info.rss %> MB</div>
+    <div class="text-xs text-[#8a7d63] mt-1">Heap used: <%= info.heap %>
+      MB</div>
+  </div>
+
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+  <!-- RUNTIME PANEL -->
+  <div
+    class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-5 space-y-2 text-xs">
+    <h2 class="h2 mb-2">Runtime</h2>
+    <% [['Node.js', info.node], ['Platform', info.platform], ['Environment',
+    info.env]].forEach(function (r) { %>
+    <div class="flex justify-between border-b border-amber-500/10 py-1.5">
+      <span class="text-[#8a7d63]"><%= r[0] %></span>
+      <span class="font-mono text-[#e8dfc9]"><%= r[1] %></span>
+    </div>
+    <% }) %>
+  </div>
+
+  <!-- COLLECTIONS PANEL -->
+  <div
+    class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-5 space-y-2 text-xs">
+    <h2 class="h2 mb-2">Collections</h2>
+    <% Object.keys(info.counts).forEach(function (k) { %>
+    <div class="flex justify-between border-b border-amber-500/10 py-1.5">
+      <span class="text-[#8a7d63] capitalize"><%= k %></span>
+      <span class="font-mono text-[#e8dfc9]"><%= info.counts[k] %></span>
+    </div>
+    <% }) %>
+  </div>
+
+</div>
+<%- include('../partials/admin-close') %>

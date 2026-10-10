@@ -1,0 +1,31 @@
+<div class="py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6">
+  <a href="/"
+    class="inline-flex items-center gap-1.5 text-xs text-[#8a7d63] hover:text-amber-400 transition">
+    <%- icon('arrow-left', 'h-4 w-4') %> Back to Home
+  </a>
+  <div
+    class="rounded-2xl border border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-8 space-y-6">
+    <div class="flex items-center gap-3 border-b border-amber-500/20 pb-4">
+      <%- icon('shield-check', 'h-7 w-7 text-amber-400') %>
+      <h1
+        class="text-2xl font-black text-white uppercase tracking-tight">Privacy
+        Policy</h1>
+    </div>
+    <div class="space-y-4 text-xs leading-relaxed">
+      <p class="text-[#a89878]">Your privacy and data security are paramount. We
+        collect only necessary tournament coordination data, specifically your
+        Free Fire UID and in-game nickname, to assign match slots and verify
+        match outcomes.</p>
+      <h2 class="text-sm font-extrabold text-white uppercase tracking-wider">1.
+        Data Minimization</h2>
+      <p class="text-[#a89878]">We do not request sensitive device permissions
+        or unnecessary personal data. Passwords are cryptographically hashed
+        with bcrypt and are never stored in plain text.</p>
+      <h2 class="text-sm font-extrabold text-white uppercase tracking-wider">2.
+        Payment Security</h2>
+      <p class="text-[#a89878]">Payment transactions are meant to be processed
+        through certified PCI-DSS compliant providers. No card or UPI PIN
+        credentials ever touch or reside on our application servers.</p>
+    </div>
+  </div>
+</div>

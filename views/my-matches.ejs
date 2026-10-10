@@ -1,0 +1,36 @@
+<div class="page space-y-6">
+  <div>
+    <h1 class="h1">My Matches</h1>
+    <p class="text-xs text-[#8a7d63] mt-1">Every tournament you have registered
+      for</p>
+  </div>
+
+  <div class="flex flex-wrap gap-2">
+    <% [['UPCOMING', 'Upcoming'], ['LIVE', 'Live'], ['COMPLETED', 'Completed'],
+    ['ALL', 'All']].forEach(function (t) { %>
+    <a href="/my-matches?tab=<%= t[0] %>"
+      class="rounded-lg px-4 py-2 text-xs font-bold transition <%= tab === t[0] ? 'bg-gradient-to-b from-amber-300 to-amber-500 text-black shadow-[0_0_20px_-5px_rgba(245,200,66,0.7)] border border-amber-400' : 'bg-black/60 border border-white/10 text-[#e8dfc9] hover:border-amber-500/40 hover:text-amber-300' %>">
+      <%= t[1] %> <span class="ml-1 font-mono opacity-70">(<%= counts[t[0]]
+        %>)</span>
+    </a>
+    <% }) %>
+  </div>
+
+  <% if (!matches.length) { %>
+  <div
+    class="rounded-2xl border border-amber-500/20 bg-black/60 backdrop-blur-sm p-12 text-center">
+    <%- icon('flame', 'mx-auto h-12 w-12 text-amber-500/40 mb-3') %>
+    <h3 class="font-bold text-lg text-white">Nothing here yet</h3>
+    <p class="text-xs text-[#8a7d63] mt-1">You have no matches in this tab.</p>
+    <a href="/matches"
+      class="inline-block mt-4 text-xs font-bold text-amber-400 hover:text-amber-300 uppercase tracking-wider transition">Browse
+      Tournaments &rarr;</a>
+  </div>
+  <% } else { %>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <% matches.forEach(function (m) { %>
+    <%- include('partials/match-card', { m: m }) %>
+    <% }) %>
+  </div>
+  <% } %>
+</div>

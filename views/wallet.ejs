@@ -1,0 +1,131 @@
+<div class="py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-8">
+  <div>
+    <h1 class="h1">Wallet &amp; Ledger</h1>
+    <p class="text-xs text-[#8a7d63] mt-1">Transaction ledger, deposit funds,
+      and withdraw verified prize winnings</p>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div
+      class="rounded-2xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-6 flex flex-col justify-between shadow-xl">
+      <div>
+        <span
+          class="flex items-center gap-1.5 text-xs font-bold text-[#8a7d63] uppercase tracking-wider mb-2">
+          <%- icon('wallet', 'h-4 w-4 text-amber-400') %> Available Balance
+        </span>
+        <div class="text-3xl font-black text-white"><%= paise(wallet ?
+          wallet.availableBalancePaise : 0) %></div>
+        <p class="text-[11px] text-[#8a7d63] mt-1">Available to join upcoming
+          tournament matches</p>
+      </div>
+      <button type="button" data-open-wallet="deposit"
+        class="btn-primary mt-6 w-full bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black shadow-[0_0_30px_-5px_rgba(245,200,66,0.7)] border border-amber-400">
+        <%- icon('circle-plus', 'h-4 w-4') %> Deposit Cash
+      </button>
+    </div>
+
+    <div
+      class="rounded-2xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-6 flex flex-col justify-between shadow-xl">
+      <div>
+        <span
+          class="flex items-center gap-1.5 text-xs font-bold text-[#8a7d63] uppercase tracking-wider mb-2">
+          <%- icon('trophy', 'h-4 w-4 text-amber-400') %> Winning Balance
+        </span>
+        <div class="text-3xl font-black text-amber-400"><%= paise(wallet ?
+          wallet.winningBalancePaise : 0) %></div>
+        <p class="text-[11px] text-[#8a7d63] mt-1">Eligible for withdrawal to
+          your UPI</p>
+      </div>
+      <button type="button" data-open-wallet="withdraw"
+        class="btn-ghost mt-6 w-full border-amber-500/30 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400">
+        <%- icon('arrow-up-right', 'h-4 w-4') %> Withdraw Prize
+      </button>
+    </div>
+
+    <div
+      class="rounded-2xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-6 flex flex-col justify-between shadow-xl">
+      <div>
+        <span
+          class="flex items-center gap-1.5 text-xs font-bold text-[#8a7d63] uppercase tracking-wider mb-2">
+          <%- icon('lock', 'h-4 w-4 text-amber-400') %> Pending Withdrawals
+        </span>
+        <div class="text-3xl font-black text-white"><%= paise(wallet ?
+          wallet.lockedBalancePaise : 0) %></div>
+        <p class="text-[11px] text-[#8a7d63] mt-1">Held while a withdrawal
+          request is reviewed</p>
+      </div>
+      <div
+        class="mt-6 flex items-center gap-1.5 text-[11px] font-semibold text-[#8a7d63]">
+        <%- icon('shield-check', 'h-3.5 w-3.5 text-amber-400') %> Protected by
+        an append-only ledger
+      </div>
+    </div>
+  </div>
+
+  <div
+    class="rounded-2xl border border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm overflow-hidden shadow-xl">
+    <div
+      class="border-b border-amber-500/20 p-5 flex items-center justify-between gap-3">
+      <div>
+        <h2 class="h2">Transaction Ledger</h2>
+        <p class="text-xs text-[#8a7d63] mt-0.5">Audit trail of all deposits,
+          entry fees, prize payouts and withdrawals</p>
+      </div>
+      <span
+        class="rounded-full bg-amber-500/10 border border-amber-500/25 px-3 py-1 text-xs font-mono font-bold text-amber-400 shrink-0">
+        <%= transactions.length %> Records
+      </span>
+    </div>
+
+    <% if (!transactions.length) { %>
+    <div class="p-12 text-center text-xs text-[#8a7d63]">No ledger transactions
+      recorded yet. Join a tournament or add cash to start.</div>
+    <% } else { %>
+    <div class="divide-y divide-amber-500/10">
+      <% transactions.forEach(function (tx) { const credit = tx.direction ===
+      'CREDIT'; %>
+      <div
+        class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 sm:px-6 hover:bg-amber-500/[0.03] transition gap-2">
+        <div class="flex items-start gap-3">
+          <div
+            class="flex h-9 w-9 items-center justify-center rounded-lg font-black text-sm shrink-0 mt-0.5 <%= credit ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-white/5 text-[#e8dfc9] border border-white/10' %>">
+            <%= credit ? '+' : '-' %>
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-extrabold text-white text-sm"><%= tx.description
+                %></span>
+              <span
+                class="rounded px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider <%= tx.type === 'PRIZE' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/25' : tx.type === 'ENTRY_FEE' ? 'bg-white/5 text-[#a89878] border border-white/10' : 'bg-white/5 text-[#8a7d63] border border-white/10' %>">
+                <%= tx.type.replace('_', ' ') %>
+              </span>
+              <% if (tx.status !== 'COMPLETED') { %>
+              <span
+                class="rounded px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider <%= stateBadge(tx.status) %>"><%=
+                tx.status %></span>
+              <% } %>
+            </div>
+            <div
+              class="flex flex-wrap items-center gap-2 text-[11px] text-[#8a7d63] font-mono mt-1">
+              <span>Ref: <%= tx.referenceType %></span><span
+                class="text-amber-500/40">•</span><span><%= date(tx.createdAt)
+                %></span>
+            </div>
+          </div>
+        </div>
+        <div class="sm:text-right sm:pl-4">
+          <span
+            class="text-base font-black font-mono block <%= credit ? 'text-emerald-400' : 'text-[#e8dfc9]' %>">
+            <%= credit ? '+' : '-' %><%= paise(tx.amountPaise) %>
+          </span>
+          <span
+            class="text-[10px] text-[#8a7d63] font-mono block mt-0.5">Balance
+            after: <%= paise(tx.balanceAfterPaise) %></span>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+    <% } %>
+  </div>
+</div>
+<%- include('partials/wallet-modal', { back: 'wallet' }) %>

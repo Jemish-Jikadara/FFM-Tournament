@@ -1,0 +1,92 @@
+<%- include('../partials/admin-open') %>
+<div class="flex items-center justify-between gap-4">
+  <div>
+    <h1 class="h1">Manage Matches</h1>
+    <p class="text-xs text-[#8a7d63] mt-1"><%= matches.length %> matches</p>
+  </div>
+  <a href="/admin/matches/create"
+    class="btn-primary bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black border border-amber-400 shadow-[0_0_24px_-6px_rgba(245,200,66,0.7)]">
+    <%- icon('circle-plus', 'h-4 w-4') %> Create Match
+  </a>
+</div>
+
+<div
+  class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm overflow-hidden">
+  <% if (!matches.length) { %>
+  <div class="p-10 text-center text-xs text-[#8a7d63]">No matches created
+    yet.</div>
+  <% } else { %>
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead class="bg-black/60 border-b border-amber-500/20">
+        <tr>
+          <th class="th text-amber-400">Match</th>
+          <th class="th text-amber-400">Start</th>
+          <th class="th text-amber-400">Fee / Prize</th>
+          <th class="th text-amber-400">Slots</th>
+          <th class="th text-amber-400">Status</th>
+          <th class="th text-amber-400 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-amber-500/10">
+        <% matches.forEach(function (m) { const st = m.displayStatus(); const
+        finished = ['COMPLETED', 'CANCELLED'].includes(m.status); %>
+        <tr class="hover:bg-amber-500/[0.03] transition">
+          <td class="td">
+            <a href="/matches/<%= m._id %>"
+              class="font-bold text-[#e8dfc9] hover:text-amber-400 transition">
+              <%= m.modeName %>
+            </a><br>
+            <span class="font-mono text-[#8a7d63]"><%= m.publicMatchCode %> ·
+              <%= m.mapName %></span>
+          </td>
+          <td class="td whitespace-nowrap text-[#a89878]"><%=
+            date(m.matchStartAt) %></td>
+          <td class="td font-mono">
+            <%= m.entryFeePaise ? paise(m.entryFeePaise) : 'FREE' %>
+            /
+            <span
+              class="bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent font-bold"><%=
+              paise(m.prizePoolPaise) %></span>
+          </td>
+          <td class="td font-mono text-[#e8dfc9]"><%= m.currentPlayers() %>/<%=
+            m.maxPlayers %></td>
+          <td class="td">
+            <span
+              class="rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider whitespace-nowrap <%= statusPill(st) %>"><%=
+              statusLabel(st) %></span>
+          </td>
+          <td class="td text-right">
+            <div class="flex justify-end items-center gap-2 flex-wrap">
+
+              <% if (m.status === 'ACTIVE') { %>
+              <a href="/admin/matches/<%= m._id %>/edit"
+                class="btn-ghost !py-1.5 !px-3 border-amber-500/30 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400">Edit</a>
+              <% } %>
+
+              <% if (['IN_PROGRESS'].includes(st) || m.status ===
+              'RESULT_SUBMITTED') { %>
+              <a href="/admin/results?match=<%= m._id %>"
+                class="btn-ghost !py-1.5 !px-3 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 hover:border-amber-400">Result</a>
+              <% } %>
+
+              <% if (!finished) { %>
+              <form method="post" action="/admin/matches/<%= m._id %>/cancel"
+                data-confirm="Cancel this match and refund all entry fees?"
+                class="flex gap-1">
+                <input name="reason" placeholder="Reason"
+                  class="input !w-28 !py-1.5 !text-xs">
+                <button class="btn-danger" type="submit">Cancel</button>
+              </form>
+              <% } %>
+
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+<%- include('../partials/admin-close') %>

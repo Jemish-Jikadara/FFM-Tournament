@@ -1,0 +1,153 @@
+<%- include('../partials/admin-open') %>
+<% const isEdit = !!edit; const f = form || {}; %>
+
+<div>
+  <a href="/admin/matches"
+    class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8a7d63] hover:text-amber-400 mb-2 transition">
+    <%- icon('arrow-left', 'h-3.5 w-3.5') %> Back to matches
+  </a>
+  <h1 class="h1"><%= isEdit ? 'Edit Match ' + edit.publicMatchCode :
+    'Create Match' %></h1>
+  <p class="text-xs text-[#8a7d63] mt-1">Times are in your configured timezone
+    (default Asia/Kolkata, IST).</p>
+</div>
+
+<!-- ERRORS -->
+<% if (errors && errors.length) { %>
+<div
+  class="rounded-lg bg-rose-500/10 border border-rose-500/30 p-3 text-xs font-semibold text-rose-400 space-y-1">
+  <% errors.forEach(function (e) { %>
+  <div class="flex items-center gap-2">
+    <%- icon('circle-alert', 'h-4 w-4 shrink-0') %> <%= e %>
+  </div>
+  <% }) %>
+</div>
+<% } %>
+
+<form method="post"
+  action="<%= isEdit ? '/admin/matches/' + edit._id + '/edit' : '/admin/matches/create' %>"
+  class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-6 space-y-6">
+
+  <!-- BASIC DETAILS -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div>
+      <label class="label" for="mode">Game Mode</label>
+      <select id="mode" name="mode" data-mode-select class="input">
+        <% modes.forEach(function (m) { %>
+        <option value="<%= m.slug %>" data-max="<%= m.maxPlayers %>" <%=f.mode
+          === m.slug ? 'selected' : '' %>><%= m.name %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div>
+      <label class="label" for="map_name">Map</label>
+      <select id="map_name" name="map_name" class="input">
+        <% maps.forEach(function (m) { %>
+        <option <%=f.map_name === m ? 'selected' : '' %>><%= m %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div>
+      <label class="label" for="entry_fee">
+        <%- icon('coins', 'inline h-3.5 w-3.5 -mt-0.5') %> Entry Fee (₹)
+      </label>
+      <input id="entry_fee" name="entry_fee" type="number" min="0" step="1"
+        required value="<%= f.entry_fee %>" class="input" <%=isEdit &&
+        edit.registrationCount> 0 ? 'readonly' : '' %>>
+    </div>
+
+    <div>
+      <label class="label" for="prize_pool">
+        <%- icon('trophy', 'inline h-3.5 w-3.5 -mt-0.5') %> Prize Pool (₹)
+      </label>
+      <input id="prize_pool" name="prize_pool" type="number" min="0" step="1"
+        required value="<%= f.prize_pool %>" class="input">
+    </div>
+
+    <div>
+      <label class="label" for="max_players">
+        <%- icon('users', 'inline h-3.5 w-3.5 -mt-0.5') %> Max Players
+      </label>
+      <input id="max_players" name="max_players" type="number" min="2" max="100"
+        required value="<%= f.max_players %>" class="input">
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div>
+    <h2
+      class="text-xs font-extrabold uppercase tracking-wider text-amber-400 mb-3 flex items-center gap-1.5">
+      <%- icon('calendar', 'h-4 w-4') %> Schedule
+    </h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="label" for="registration_start_at">Registration
+          Opens</label>
+        <input id="registration_start_at" name="registration_start_at"
+          type="datetime-local" required value="<%= f.registration_start_at %>"
+          class="input">
+      </div>
+      <div>
+        <label class="label" for="registration_close_at">Registration
+          Closes</label>
+        <input id="registration_close_at" name="registration_close_at"
+          type="datetime-local" required value="<%= f.registration_close_at %>"
+          class="input">
+      </div>
+      <div>
+        <label class="label" for="room_release_at">Room Release</label>
+        <input id="room_release_at" name="room_release_at" type="datetime-local"
+          required value="<%= f.room_release_at %>" class="input">
+      </div>
+      <div>
+        <label class="label" for="match_start_at">Match Start</label>
+        <input id="match_start_at" name="match_start_at" type="datetime-local"
+          required value="<%= f.match_start_at %>" class="input">
+      </div>
+    </div>
+  </div>
+
+  <!-- ROOM CREDENTIALS -->
+  <div>
+    <h2
+      class="text-xs font-extrabold uppercase tracking-wider text-amber-400 mb-3 flex items-center gap-1.5">
+      <%- icon('key', 'h-4 w-4') %> Custom Room (encrypted, shown to joined
+      players at release time)
+    </h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="label" for="room_id">Room ID</label>
+        <input id="room_id" name="room_id" value="<%= f.room_id || '' %>"
+          class="input font-mono" autocomplete="off">
+      </div>
+      <div>
+        <label class="label" for="room_password">Room Password</label>
+        <input id="room_password" name="room_password"
+          value="<%= f.room_password || '' %>" class="input font-mono"
+          autocomplete="off">
+      </div>
+    </div>
+  </div>
+
+  <!-- RULES -->
+  <div>
+    <label class="label" for="rules_text">Match Rules (optional)</label>
+    <textarea id="rules_text" name="rules_text" rows="3" maxlength="2000"
+      class="input"><%= f.rules_text || '' %></textarea>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="flex gap-3">
+    <button type="submit"
+      class="btn-primary bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black border border-amber-400 shadow-[0_0_24px_-6px_rgba(245,200,66,0.7)]">
+      <%= isEdit ? 'Save Changes' : 'Create Match' %>
+    </button>
+    <a href="/admin/matches"
+      class="btn-ghost border-amber-500/30 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400">
+      Cancel
+    </a>
+  </div>
+</form>
+<%- include('../partials/admin-close') %>

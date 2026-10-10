@@ -1,0 +1,72 @@
+<%- include('../partials/admin-open') %>
+<div>
+  <h1 class="h1">UID Verification</h1>
+  <p class="text-xs text-[#8a7d63] mt-1">Check each player's Free Fire UID and
+    nickname</p>
+</div>
+
+<div class="flex gap-2">
+  <% ['PENDING', 'VERIFIED', 'REJECTED'].forEach(function (s) { %>
+  <a href="/admin/gaming-identities?status=<%= s %>"
+    class="rounded-lg px-4 py-2 text-xs font-bold transition
+      <%= status === s
+          ? 'bg-gradient-to-b from-amber-300 to-amber-500 text-black border border-amber-400 shadow-[0_0_20px_-5px_rgba(245,200,66,0.7)]'
+          : 'bg-black/60 border border-white/10 text-[#e8dfc9] hover:border-amber-500/40 hover:text-amber-300' %>">
+    <%= s %>
+  </a>
+  <% }) %>
+</div>
+
+<div
+  class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm overflow-hidden">
+  <% if (!users.length) { %>
+  <div class="p-10 text-center text-xs text-[#8a7d63]">No <%=
+    status.toLowerCase() %> identities.</div>
+  <% } else { %>
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead class="bg-black/60 border-b border-amber-500/20">
+        <tr>
+          <th class="th text-amber-400">Player</th>
+          <th class="th text-amber-400">UID</th>
+          <th class="th text-amber-400">Nickname</th>
+          <th class="th text-amber-400">Action</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-amber-500/10">
+        <% users.forEach(function (u) { %>
+        <tr class="hover:bg-amber-500/[0.03] transition">
+          <td class="td">
+            <span class="font-bold text-[#e8dfc9]"><%= u.profile.displayName
+              %></span><br>
+            <span class="text-[#8a7d63]"><%= u.email %></span>
+          </td>
+          <td class="td font-mono text-amber-400"><%= u.profile.freeFireUid
+            %></td>
+          <td class="td text-[#a89878]"><%= u.profile.freeFireName %></td>
+          <td class="td">
+            <form method="post"
+              action="/admin/gaming-identities/<%= u._id %>/verify?status=<%= status %>"
+              class="flex flex-wrap gap-2 items-center">
+              <input name="notes" placeholder="Note (for reject)"
+                value="<%= u.uidNotes || '' %>"
+                class="input !w-40 !py-1.5 !text-xs">
+              <% if (status !== 'VERIFIED') { %>
+              <button name="status" value="VERIFIED"
+                class="btn-primary !py-1.5 !px-3 bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black border border-amber-400 shadow-[0_0_16px_-4px_rgba(245,200,66,0.7)]"
+                type="submit">Verify</button>
+              <% } %>
+              <% if (status !== 'REJECTED') { %>
+              <button name="status" value="REJECTED" class="btn-danger"
+                type="submit">Reject</button>
+              <% } %>
+            </form>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+<%- include('../partials/admin-close') %>

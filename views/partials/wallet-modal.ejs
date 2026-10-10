@@ -1,0 +1,95 @@
+<%# locals: back ('wallet' | 'dashboard') %>
+<div id="wallet-modal"
+  class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+  <div
+    class="w-full max-w-md rounded-2xl border border-amber-500/25 bg-[#0f0c08]/95 backdrop-blur-md p-6 shadow-[0_0_60px_-15px_rgba(245,200,66,0.4)]">
+
+    <!-- HEADER -->
+    <div class="flex items-center justify-between mb-4">
+      <h3
+        class="text-lg font-black uppercase text-white tracking-wider">Wallet</h3>
+      <button type="button" data-close-modal
+        class="text-[#8a7d63] hover:text-amber-400 cursor-pointer transition"
+        aria-label="Close">
+        <%- icon('x', 'h-5 w-5') %>
+      </button>
+    </div>
+
+    <!-- TABS -->
+    <div class="grid grid-cols-2 gap-2 mb-5">
+      <button type="button" data-tab="deposit"
+        class="rounded-lg py-2 text-xs font-bold uppercase tracking-wider cursor-pointer">Add
+        Cash</button>
+      <button type="button" data-tab="withdraw"
+        class="rounded-lg py-2 text-xs font-bold uppercase tracking-wider cursor-pointer">Withdraw</button>
+    </div>
+
+    <!-- DEPOSIT FORM -->
+    <form method="post" action="/wallet/deposit" data-panel="deposit"
+      class="space-y-4">
+      <input type="hidden" name="back" value="<%= back %>">
+
+      <% if (testMode) { %>
+      <div
+        class="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-[11px] font-semibold text-amber-300">
+        TEST MODE: cash is added instantly and no real payment is taken.
+      </div>
+      <% } else { %>
+      <div
+        class="rounded-lg border border-amber-500/20 bg-black/60 p-3 text-[11px] text-[#a89878]">
+        Online payments are not enabled yet.
+      </div>
+      <% } %>
+
+      <div>
+        <label class="label" for="dep-amount">Amount (₹)</label>
+        <input id="dep-amount" name="amount" type="number" min="10" max="10000"
+          step="1" required value="100" class="input">
+        <div class="flex gap-2 mt-2">
+          <% [50, 100, 200, 500].forEach(function (a) { %>
+          <button type="button" data-amount="<%= a %>"
+            class="flex-1 rounded-md border border-amber-500/25 bg-amber-500/[0.06] py-1.5 text-xs font-bold text-amber-300 hover:bg-amber-500/15 hover:border-amber-500/50 cursor-pointer transition">₹<%=
+            a %></button>
+          <% }) %>
+        </div>
+      </div>
+
+      <button type="submit"
+        class="btn-primary w-full bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black shadow-[0_0_30px_-5px_rgba(245,200,66,0.7)] border border-amber-400"
+        <%=testMode ? '' : 'disabled' %>>
+        Add Cash
+      </button>
+    </form>
+
+    <!-- WITHDRAW FORM -->
+    <form method="post" action="/wallet/withdraw" data-panel="withdraw"
+      class="space-y-4 hidden">
+      <input type="hidden" name="back" value="<%= back %>">
+
+      <p class="text-[11px] text-[#a89878]">
+        Only prize winnings can be withdrawn. Winning balance:
+        <strong class="text-amber-400"><%= paise(wallet ?
+          wallet.winningBalancePaise : 0) %></strong>.
+        Minimum ₹50.
+      </p>
+
+      <div>
+        <label class="label" for="wd-amount">Amount (₹)</label>
+        <input id="wd-amount" name="amount" type="number" min="50" step="1"
+          required class="input" placeholder="e.g. 200">
+      </div>
+
+      <div>
+        <label class="label" for="wd-upi">UPI ID</label>
+        <input id="wd-upi" name="upi" type="text" required class="input"
+          placeholder="name@upi">
+      </div>
+
+      <button type="submit"
+        class="btn-primary w-full bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black shadow-[0_0_30px_-5px_rgba(245,200,66,0.7)] border border-amber-400">
+        Request Withdrawal
+      </button>
+    </form>
+
+  </div>
+</div>

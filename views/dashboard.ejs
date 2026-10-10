@@ -1,0 +1,156 @@
+<%
+const p = user.profile || {};
+const winRate = p.totalMatches > 0 ? Math.round((p.totalWins / p.totalMatches) *
+100) : 0;
+const uidClass = user.uidStatus === 'VERIFIED' ? 'text-emerald-400' :
+user.uidStatus === 'REJECTED' ? 'text-rose-400' : 'text-amber-400';
+%>
+<div class="page space-y-8">
+  <div
+    class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl border border-amber-500/20 bg-[#0f0c08]/80 p-6 backdrop-blur-sm">
+    <div>
+      <span
+        class="text-xs font-bold uppercase tracking-wider text-amber-400">COMPETITOR
+        DASHBOARD</span>
+      <h1 class="text-2xl font-black text-white mt-0.5">Welcome back, <%=
+        user.shownName() %></h1>
+      <div
+        class="flex flex-wrap items-center gap-3 mt-2 text-xs text-[#a89878]">
+        <span class="font-mono"><strong class="text-[#e8dfc9]">UID:</strong> <%=
+          p.freeFireUid || 'Not linked' %></span><span
+          class="text-amber-500/40">•</span>
+        <span><strong class="text-[#e8dfc9]">IGN:</strong> <%= p.freeFireName ||
+          'N/A' %></span><span class="text-amber-500/40">•</span>
+        <span class="font-semibold <%= uidClass %>"><%= user.uidStatus %></span>
+      </div>
+    </div>
+    <a href="/matches"
+      class="flex items-center gap-2 rounded-xl bg-gradient-to-b from-amber-300 to-amber-500 px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-black shadow-[0_0_30px_-5px_rgba(245,200,66,0.7)] hover:from-amber-200 hover:to-amber-400 transition"><%-
+      icon('swords', 'h-4 w-4') %> Browse Matches</a>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div
+      class="rounded-xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-5 flex flex-col justify-between">
+      <span
+        class="flex items-center gap-1.5 uppercase tracking-wider text-xs text-[#8a7d63] font-semibold mb-2"><%-
+        icon('wallet', 'h-4 w-4 text-amber-400') %> Available Balance</span>
+      <div class="text-2xl font-black text-white my-1"><%= paise(wallet ?
+        wallet.availableBalancePaise : 0) %></div>
+      <div
+        class="flex items-center gap-2 mt-3 pt-3 border-t border-amber-500/15">
+        <button type="button" data-open-wallet="deposit"
+          class="flex-1 flex items-center justify-center gap-1 rounded-md bg-amber-500/15 border border-amber-500/40 py-1.5 text-xs font-bold text-amber-400 hover:bg-amber-500/25 transition cursor-pointer"><%-
+          icon('circle-plus', 'h-3.5 w-3.5') %> Add Cash</button>
+        <button type="button" data-open-wallet="withdraw"
+          class="flex-1 flex items-center justify-center gap-1 rounded-md bg-white/5 border border-white/10 py-1.5 text-xs font-bold text-slate-300 hover:bg-white/10 transition cursor-pointer"><%-
+          icon('arrow-up-right', 'h-3.5 w-3.5') %> Withdraw</button>
+      </div>
+    </div>
+    <div
+      class="rounded-xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-5 flex flex-col justify-between">
+      <span
+        class="flex items-center gap-1.5 uppercase tracking-wider text-xs text-[#8a7d63] font-semibold mb-2"><%-
+        icon('trophy', 'h-4 w-4 text-amber-400') %> Total Winnings</span>
+      <div class="text-2xl font-black text-amber-400 my-1"><%=
+        paise(p.totalWinningsPaise) %></div>
+      <span
+        class="text-xs text-[#8a7d63] mt-3 pt-3 border-t border-amber-500/15">Winning
+        Balance: <strong class="text-[#e8dfc9]"><%= paise(wallet ?
+          wallet.winningBalancePaise : 0) %></strong></span>
+    </div>
+    <div
+      class="rounded-xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-5 flex flex-col justify-between">
+      <span
+        class="flex items-center gap-1.5 uppercase tracking-wider text-xs text-[#8a7d63] font-semibold mb-2"><%-
+        icon('percent', 'h-4 w-4 text-amber-400') %> Win Rate</span>
+      <div class="text-2xl font-black text-white my-1"><%= winRate %>%</div>
+      <div
+        class="flex items-center justify-between text-xs text-[#8a7d63] mt-3 pt-3 border-t border-amber-500/15">
+        <span>Wins: <strong class="text-emerald-400"><%= p.totalWins || 0
+            %></strong></span>
+        <span>Losses: <strong class="text-rose-400"><%= p.totalLosses || 0
+            %></strong></span>
+      </div>
+    </div>
+    <div
+      class="rounded-xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-5 flex flex-col justify-between">
+      <span
+        class="flex items-center gap-1.5 uppercase tracking-wider text-xs text-[#8a7d63] font-semibold mb-2"><%-
+        icon('trending-up', 'h-4 w-4 text-amber-400') %> Current Streak</span>
+      <div
+        class="text-2xl font-black text-white my-1 flex items-center gap-2"><%=
+        p.currentStreak || 0 %> <%- icon('flame',
+        'h-5 w-5 fill-amber-500 text-amber-500') %></div>
+      <span
+        class="text-xs text-[#8a7d63] mt-3 pt-3 border-t border-amber-500/15">Total
+        Matches: <strong class="text-[#e8dfc9]"><%= p.totalMatches || 0
+          %></strong></span>
+    </div>
+  </div>
+
+  <% if (live.length) { %>
+  <section>
+    <div class="flex items-center gap-2 mb-4"><span
+        class="h-2.5 w-2.5 rounded-full bg-amber-400 animate-ping"></span><h2
+        class="h2">Your Live Tournaments</h2></div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><% live.forEach(function
+      (m) { %><%- include('partials/match-card', { m: m }) %><% }) %></div>
+  </section>
+  <% } %>
+
+  <section>
+    <div class="flex items-center justify-between mb-4"><h2 class="h2">Upcoming
+        Registered Matches</h2><a href="/my-matches"
+        class="text-xs font-bold text-amber-400 hover:text-amber-300 uppercase">View
+        All Registered</a></div>
+    <% if (!upcoming.length) { %>
+    <div
+      class="rounded-xl border border-amber-500/20 bg-black/60 backdrop-blur-sm p-8 text-center">
+      <%- icon('clock', 'mx-auto h-8 w-8 text-amber-500/40 mb-2') %>
+      <p class="text-sm font-semibold text-[#e8dfc9]">You have no upcoming
+        registered matches.</p>
+      <a href="/matches"
+        class="inline-block mt-3 text-xs font-bold text-amber-400 hover:text-amber-300 uppercase tracking-wider">Browse
+        Open Tournaments &rarr;</a>
+    </div>
+    <% } else { %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><%
+      upcoming.forEach(function (m) { %><%- include('partials/match-card', { m:
+      m }) %><% }) %></div>
+    <% } %>
+  </section>
+
+  <section>
+    <div class="flex items-center justify-between mb-4"><h2 class="h2">Recent
+        Wallet Ledger Activity</h2><a href="/wallet"
+        class="text-xs font-bold text-amber-400 hover:text-amber-300 uppercase">Full
+        Wallet History</a></div>
+    <% if (!transactions.length) { %>
+    <div
+      class="rounded-xl border border-amber-500/20 bg-black/60 backdrop-blur-sm p-8 text-center text-xs text-[#8a7d63]">No
+      recent wallet transactions.</div>
+    <% } else { %>
+    <div
+      class="rounded-xl border border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm overflow-hidden divide-y divide-amber-500/10">
+      <% transactions.forEach(function (tx) { %>
+      <div class="flex items-center justify-between p-4 text-xs">
+        <div><span class="font-bold text-[#e8dfc9] block"><%= tx.description
+            %></span><span class="text-[11px] text-[#8a7d63] mt-0.5 block"><%=
+            date(tx.createdAt) %></span></div>
+        <div class="text-right">
+          <span
+            class="font-mono text-sm font-black <%= tx.direction === 'CREDIT' ? 'text-emerald-400' : 'text-slate-300' %>"><%=
+            tx.direction === 'CREDIT' ? '+' : '-' %><%= paise(tx.amountPaise)
+            %></span>
+          <span
+            class="block text-[10px] text-[#8a7d63] uppercase tracking-wider mt-0.5"><%=
+            tx.status %></span>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+    <% } %>
+  </section>
+</div>
+<%- include('partials/wallet-modal', { back: 'dashboard' }) %>

@@ -1,0 +1,8 @@
+<% if (flash && flash.message) { %>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4" data-flash>
+    <div class="flex items-center gap-2 rounded-lg border p-3 text-xs font-semibold <%= flash.type === 'error' ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-amber-500/10 border-amber-500/30 text-amber-400' %>">
+      <%- icon(flash.type === 'error' ? 'circle-alert' : 'circle-check-big', 'h-4 w-4 shrink-0') %>
+      <span><%= flash.message %></span>
+    </div>
+  </div>
+<% } %>

@@ -1,0 +1,252 @@
+<%
+  const st = match.displayStatus();
+  const cur = match.currentPlayers();
+  const isFull = cur >= match.maxPlayers;
+  const isDone = st === 'COMPLETED' || st === 'CANCELLED';
+  const teams = {};
+  players.forEach(function (p) { (teams[p.team] = teams[p.team] || []).push(p); });
+  const isTeamMode = match.teamSize > 1;
+%>
+<div class="py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-6">
+  <a href="/matches" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8a7d63] hover:text-amber-400 transition">
+    <%- icon('arrow-left', 'h-4 w-4') %> Back to Arena
+  </a>
+
+  <!-- MAIN MATCH CARD -->
+  <div class="rounded-2xl border border-amber-500/20 bg-[#0f0c08]/80 p-6 sm:p-8 backdrop-blur-md">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div>
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <span class="rounded-md bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 text-xs font-bold text-amber-400 uppercase tracking-wider"><%= match.modeName %></span>
+          <span class="rounded-md bg-white/5 px-2.5 py-1 text-xs font-mono font-bold text-[#a89878]"><%= match.publicMatchCode %></span>
+          <span class="rounded-full px-3 py-0.5 text-xs font-bold uppercase tracking-wider <%= statusPill(st) %>"><%= statusLabel(st) %></span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">Free Fire <%= match.modeName %> Championship</h1>
+        <p class="text-xs text-[#8a7d63] mt-1 flex items-center gap-2">
+          <%- icon('map-pin', 'h-3.5 w-3.5 text-[#8a7d63]') %>
+          Battlefield: <strong class="text-[#e8dfc9]"><%= match.mapName %></strong>
+        </p>
+      </div>
+      <div class="sm:text-right sm:border-l sm:border-amber-500/20 sm:pl-6">
+        <span class="text-xs text-[#8a7d63] font-semibold block uppercase tracking-wider">Grand Prize Pool</span>
+        <span class="text-3xl font-black bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent"><%= paise(match.prizePoolPaise) %></span>
+      </div>
+    </div>
+
+    <% if (st === 'CANCELLED') { %>
+      <div class="mb-4 flex items-center gap-2 rounded-lg bg-rose-500/10 border border-rose-500/30 p-3 text-xs font-semibold text-rose-400">
+        <%- icon('circle-alert', 'h-4 w-4 shrink-0') %>
+        <span>This match was cancelled<%= match.cancelReason ? ': ' + match.cancelReason : '.' %></span>
+      </div>
+    <% } %>
+
+    <!-- STATS ROW -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 border-y border-amber-500/15 py-4 my-6">
+      <div>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] block">Entry Fee</span>
+        <span class="text-lg font-black text-white"><%= match.entryFeePaise === 0 ? 'FREE' : paise(match.entryFeePaise) %></span>
+      </div>
+      <div>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] block">Confirmed Slots</span>
+        <span class="text-lg font-black text-white font-mono"><%= cur %> / <%= match.maxPlayers %></span>
+      </div>
+      <div>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] block">Match Start Time</span>
+        <span class="text-xs font-bold text-[#e8dfc9] block mt-1"><%= date(match.matchStartAt) %></span>
+      </div>
+      <div>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] block">Room Release</span>
+        <span class="text-xs font-bold text-[#e8dfc9] block mt-1"><%= date(match.roomReleaseAt) %></span>
+      </div>
+    </div>
+
+    <!-- ACTION ROW -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <% if (!isDone && st !== 'IN_PROGRESS' && match.status === 'ACTIVE') { %>
+          <div class="flex items-center gap-1.5 font-mono text-xs text-[#a89878]">
+            <%- icon('clock', 'h-3.5 w-3.5 text-amber-400') %>
+            <span class="text-[#8a7d63]">Match starts in:</span>
+            <span class="font-bold text-amber-400" data-countdown="<%= match.matchStartAt.toISOString() %>" data-reload>--:--:--</span>
+          </div>
+        <% } %>
+      </div>
+      <div>
+        <% if (isRegistered) { %>
+          <div class="flex items-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-5 py-3 text-xs font-bold text-amber-400">
+            <%- icon('circle-check-big', 'h-4 w-4') %>
+            You are confirmed for this tournament! (Slot #<%= match.slotOf(user._id) %>)
+          </div>
+        <% } else if (isDone) { %>
+          <span class="text-xs font-semibold text-[#8a7d63]"><%= st === 'CANCELLED' ? 'Tournament was cancelled.' : 'Tournament has concluded.' %></span>
+        <% } else if (isFull) { %>
+          <button disabled class="rounded-xl bg-white/5 border border-white/10 px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#8a7d63] cursor-not-allowed">
+            Match Fully Booked
+          </button>
+        <% } else if (st !== 'REGISTRATION_OPEN') { %>
+          <button disabled class="rounded-xl bg-white/5 border border-white/10 px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#8a7d63] cursor-not-allowed">
+            <%= st === 'SCHEDULED' ? 'Registration not open yet' : 'Registration closed' %>
+          </button>
+        <% } else if (!user) { %>
+          <a href="/login?next=/matches/<%= match._id %>" class="inline-block rounded-xl bg-gradient-to-b from-amber-300 to-amber-500 px-8 py-3.5 text-xs font-black uppercase tracking-wider text-black shadow-[0_0_30px_-5px_rgba(245,200,66,0.7)] hover:from-amber-200 hover:to-amber-400 transition">
+            Sign in to Join
+          </a>
+        <% } else { %>
+          <form method="post" action="/matches/<%= match._id %>/join" <%- match.entryFeePaise > 0 ? `data-confirm="Join for ${paise(match.entryFeePaise)}? The fee is deducted from your wallet."` : '' %>>
+            <button type="submit" class="rounded-xl bg-gradient-to-b from-amber-300 to-amber-500 px-8 py-3.5 text-xs font-black uppercase tracking-wider text-black shadow-[0_0_30px_-5px_rgba(245,200,66,0.7)] hover:from-amber-200 hover:to-amber-400 transition cursor-pointer disabled:opacity-50">
+              Join Match (<%= match.entryFeePaise === 0 ? 'Free' : paise(match.entryFeePaise) %>)
+            </button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROOM DETAILS SECTION -->
+  <% if (!isDone) { %>
+    <% if (!isRegistered) { %>
+      <div class="rounded-xl border border-amber-500/20 bg-black/60 backdrop-blur-sm p-5 text-center">
+        <%- icon('shield-alert', 'mx-auto h-8 w-8 text-[#8a7d63] mb-2') %>
+        <h3 class="font-bold text-[#e8dfc9]">Room Details Restricted</h3>
+        <p class="text-xs text-[#8a7d63] mt-1 max-w-sm mx-auto">Custom match room ID and password are only accessible to confirmed registered players.</p>
+      </div>
+    <% } else if (!room) { %>
+      <div class="rounded-xl border border-amber-500/30 bg-amber-500/5 p-5 text-center">
+        <%- icon('lock', 'mx-auto h-8 w-8 text-amber-400 mb-2') %>
+        <h3 class="font-bold text-[#e8dfc9]">Room Details Locked</h3>
+        <p class="text-xs text-[#8a7d63] mt-1">Credentials unlock automatically at the configured release time.</p>
+        <div class="mt-3 inline-flex items-center justify-center rounded-lg bg-black/60 border border-amber-500/20 px-4 py-2">
+          <div class="flex items-center gap-1.5 font-mono text-xs text-[#a89878]">
+            <%- icon('clock', 'h-3.5 w-3.5 text-amber-400') %>
+            <span class="text-[#8a7d63]">Unlocks in:</span>
+            <span class="font-bold text-amber-400" data-countdown="<%= match.roomReleaseAt.toISOString() %>" data-reload>--:--:--</span>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="rounded-xl border border-amber-500/30 bg-amber-500/[0.05] p-5">
+        <div class="flex items-center justify-between gap-2 mb-4">
+          <div class="flex items-center gap-2">
+            <%- icon('unlock', 'h-5 w-5 text-amber-400') %>
+            <h3 class="font-extrabold text-white text-base">Custom Room Credentials</h3>
+          </div>
+          <span class="rounded-full bg-amber-500/20 border border-amber-500/40 px-2.5 py-0.5 text-[11px] font-bold text-amber-400 uppercase tracking-wider">
+            LIVE CREDENTIALS
+          </span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <% [['ROOM ID', room.id], ['ROOM PASSWORD', room.password]].forEach(function (f) { %>
+            <div class="flex items-center justify-between rounded-lg border border-amber-500/20 bg-black/60 p-3.5">
+              <div>
+                <span class="text-[10px] font-bold text-[#8a7d63] uppercase tracking-wider block"><%= f[0] %></span>
+                <span class="font-mono text-lg font-black text-amber-400"><%= f[1] || 'N/A' %></span>
+              </div>
+              <% if (f[1]) { %>
+                <button type="button" data-copy="<%= f[1] %>" class="flex items-center gap-1 rounded-md bg-white/5 border border-white/10 px-2.5 py-1.5 text-xs font-semibold text-[#e8dfc9] hover:bg-amber-500/10 hover:border-amber-500/40 hover:text-amber-300 transition cursor-pointer">
+                  <%- icon('copy', 'h-3.5 w-3.5') %> Copy
+                </button>
+              <% } %>
+            </div>
+          <% }) %>
+        </div>
+        <p class="text-[11px] text-[#8a7d63] mt-3">Open Free Fire &rarr; Custom Room &rarr; Join with this Room ID and password. Do not share these credentials.</p>
+      </div>
+    <% } %>
+  <% } %>
+
+  <!-- MATCH RULES -->
+  <% if (match.rulesText) { %>
+    <div class="rounded-2xl border border-amber-500/20 bg-[#0f0c08]/60 backdrop-blur-sm p-6">
+      <h2 class="h2 mb-3">Match Rules</h2>
+      <p class="text-xs text-[#e8dfc9] leading-relaxed whitespace-pre-line"><%= match.rulesText %></p>
+    </div>
+  <% } %>
+
+  <!-- RESULTS -->
+  <% if (results.length) { %>
+    <div class="rounded-2xl border border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm overflow-hidden">
+      <h2 class="h2 p-5 border-b border-amber-500/20 flex items-center gap-2">
+        <%- icon('trophy', 'h-5 w-5 text-amber-400') %> Final Results
+      </h2>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-black/60 border-b border-amber-500/20">
+            <tr>
+              <th class="th text-amber-400">#</th>
+              <th class="th text-amber-400">Player</th>
+              <th class="th text-amber-400">Kills</th>
+              <th class="th text-amber-400 text-right">Prize</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-amber-500/10">
+            <% results.forEach(function (r) { %>
+              <tr class="hover:bg-amber-500/[0.03] transition">
+                <td class="td font-mono font-black <%= r.placement === 1 ? 'text-amber-400' : 'text-[#e8dfc9]' %>"><%= r.placement %></td>
+                <td class="td">
+                  <span class="font-bold text-[#e8dfc9]"><%= r.name %></span>
+                  <span class="text-[#8a7d63]"><%= r.ign %></span>
+                </td>
+                <td class="td font-mono text-[#a89878]"><%= r.kills %></td>
+                <td class="td text-right font-mono font-bold <%= r.prizePaise > 0 ? 'text-emerald-400' : 'text-[#8a7d63]' %>">
+                  <%= r.prizePaise > 0 ? paise(r.prizePaise) : '—' %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- PLAYERS / TEAMS -->
+  <% if (players.length) { %>
+    <div class="rounded-2xl border border-amber-500/20 bg-[#0f0c08]/60 backdrop-blur-sm p-6">
+      <h2 class="h2 mb-4 flex items-center gap-2">
+        <%- icon('users', 'h-5 w-5 text-amber-400') %>
+        <%= isTeamMode ? 'Assigned Team Rosters' : 'Registered Players' %>
+      </h2>
+      <% if (isTeamMode) { %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <% Object.keys(teams).forEach(function (t) { %>
+            <div class="rounded-xl border border-amber-500/20 bg-black/60 p-4">
+              <div class="flex items-center justify-between border-b border-amber-500/15 pb-2.5 mb-3">
+                <h3 class="font-extrabold text-white text-sm">Team <%= t %></h3>
+                <span class="text-[11px] font-mono text-[#a89878]"><%= teams[t].length %>/<%= match.teamSize %></span>
+              </div>
+              <% teams[t].forEach(function (p) { %>
+                <div class="flex items-center justify-between text-xs py-1">
+                  <span class="font-medium <%= p.isMe ? 'text-amber-400' : 'text-[#e8dfc9]' %>">
+                    <%= p.name %><%= p.isMe ? ' (you)' : '' %>
+                    <span class="text-[#8a7d63]"><%= p.ign %></span>
+                  </span>
+                  <span class="font-mono text-[#8a7d63]"><%= p.uid %></span>
+                </div>
+              <% }) %>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <% players.forEach(function (p) { %>
+            <div class="flex items-center justify-between rounded-lg border border-amber-500/15 bg-black/60 px-3 py-2 text-xs">
+              <span class="font-medium <%= p.isMe ? 'text-amber-400' : 'text-[#e8dfc9]' %>">
+                <span class="font-mono text-[#8a7d63]">#<%= p.slot %></span>
+                <%= p.name %><%= p.isMe ? ' (you)' : '' %>
+                <span class="text-[#8a7d63]"><%= p.ign %></span>
+              </span>
+              <span class="font-mono text-[#8a7d63]"><%= p.uid %></span>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+      <p class="text-[11px] text-[#8a7d63] mt-3">Teams are auto-allocated in the order players join.</p>
+    </div>
+  <% } %>
+
+  <!-- DISPUTE LINK -->
+  <div class="text-center">
+    <a href="/disputes" class="text-xs font-semibold text-[#8a7d63] hover:text-amber-400 inline-flex items-center gap-1 transition">
+      <%- icon('info', 'h-3.5 w-3.5') %> Issue with this match? Raise a dispute
+    </a>
+  </div>
+</div>

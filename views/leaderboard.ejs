@@ -1,0 +1,35 @@
+<div class="py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6">
+  <div><h1 class="h1">Leaderboard</h1><p class="text-xs text-slate-400 mt-1">Rankings computed from verified tournament settlements and cash winnings</p></div>
+
+  <% if (!rankings.length) { %>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/30 p-12 text-center"><%- icon('trophy', 'mx-auto h-12 w-12 text-slate-600 mb-3') %><h3 class="font-bold text-lg text-white">No rankings yet</h3><p class="text-xs text-slate-400 mt-1">Rankings appear after the first match is settled.</p></div>
+  <% } else { %>
+    <% if (rankings.length >= 3) { %>
+      <div class="grid grid-cols-3 gap-3 items-end">
+        <% [[1, 'text-slate-300', 'border-slate-600', 'h-28'], [0, 'text-amber-400', 'border-amber-500/50', 'h-36'], [2, 'text-orange-400', 'border-orange-500/40', 'h-24']].forEach(function (o) { const r = rankings[o[0]].profile; %>
+          <div class="rounded-2xl border <%= o[2] %> bg-slate-900/70 p-4 text-center flex flex-col justify-end <%= o[3] %>">
+            <%- icon('trophy', 'mx-auto h-5 w-5 mb-1 ' + o[1]) %>
+            <h3 class="font-extrabold text-white text-sm truncate"><%= r.displayName %></h3>
+            <span class="text-[11px] text-slate-400 font-mono block truncate"><%= r.freeFireName %></span>
+            <span class="text-sm font-black text-emerald-400"><%= paise(r.totalWinningsPaise) %></span>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+      <div class="overflow-x-auto"><table class="w-full">
+        <thead class="bg-slate-950/60"><tr><th class="th">Rank</th><th class="th">Player</th><th class="th">Matches</th><th class="th">Wins</th><th class="th text-right">Winnings</th></tr></thead>
+        <tbody class="divide-y divide-slate-800/80">
+          <% rankings.forEach(function (u, i) { const r = u.profile; %>
+            <tr class="hover:bg-slate-900/80 <%= user && String(user._id) === String(u._id) ? 'bg-emerald-500/5' : '' %>">
+              <td class="td font-mono font-black <%= i < 3 ? 'text-amber-400' : '' %>">#<%= i + 1 %></td>
+              <td class="td"><span class="font-bold text-slate-200"><%= r.displayName %></span> <span class="text-slate-500 font-mono"><%= r.freeFireName %></span></td>
+              <td class="td font-mono"><%= r.totalMatches %></td>
+              <td class="td font-mono text-emerald-400"><%= r.totalWins %></td>
+              <td class="td text-right font-mono font-bold text-emerald-400"><%= paise(r.totalWinningsPaise) %></td>
+            </tr>
+          <% }) %>
+        </tbody></table></div>
+    </div>
+  <% } %>
+</div>

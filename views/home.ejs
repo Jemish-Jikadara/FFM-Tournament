@@ -1,0 +1,518 @@
+<div class="relative min-h-screen bg-black text-[#e8dfc9] overflow-hidden"
+  style="font-family: 'Inter', system-ui, sans-serif;">
+
+  <!-- ============================================================
+       BACKGROUND WATERMARK LOGO (30% opacity)
+       ============================================================ -->
+  <div
+    class="pointer-events-none fixed inset-0 z-0 flex items-center justify-center"
+    style="opacity: 0.08;">
+    <img
+      src="/img/logo.png"
+      alt
+      aria-hidden="true"
+      class="w-[1200px] max-w-[95vw] h-auto object-contain select-none"
+      draggable="false" />
+  </div>
+
+  <!-- Background radial gold glow -->
+  <div
+    class="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_30%,rgba(245,200,66,0.12),transparent_65%)]">
+  </div>
+
+  <!-- Subtle grid texture -->
+  <div
+    class="pointer-events-none fixed inset-0 z-0 opacity-[0.03]"
+    style="background-image: linear-gradient(rgba(245,200,66,1) 1px, transparent 1px), linear-gradient(90deg, rgba(245,200,66,1) 1px, transparent 1px); background-size: 60px 60px;">
+  </div>
+
+  <!-- ============================================================
+       CONTENT (above watermark)
+       ============================================================ -->
+  <div class="relative z-10">
+
+    <!-- ============================================================
+         HERO
+         ============================================================ -->
+    <section class="relative border-b border-amber-500/20">
+
+      <div class="relative max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+
+        <div class="grid lg:grid-cols-12 gap-10 items-center">
+
+          <!-- LEFT: Big FFM wordmark -->
+          <div class="lg:col-span-5 flex flex-col items-center lg:items-start">
+
+            <!-- FFM Logo Image -->
+            <div class="relative w-64 sm:w-72 mb-6">
+              <div
+                class="absolute inset-0 bg-amber-400/15 blur-3xl rounded-full"></div>
+              <img
+                src="/img/logo.png"
+                alt="FFM - Paid Scrims"
+                class="relative w-full h-auto object-contain select-none"
+                draggable="false"
+                style="filter: drop-shadow(0 8px 30px rgba(245,200,66,0.35));" />
+            </div>
+
+            <!-- Tagline -->
+            <div class="text-center lg:text-left">
+              <div
+                class="text-xs sm:text-sm font-bold tracking-[0.25em] text-white uppercase leading-relaxed">
+                From Underdogs<br>
+                To <span class="text-amber-400">Undergods</span>
+              </div>
+              <div
+                class="text-xs sm:text-sm font-bold tracking-[0.25em] text-[#8a7d63] uppercase mt-2">
+                It All Starts Here
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT: Copy + CTAs -->
+          <div class="lg:col-span-7">
+
+            <div
+              class="inline-flex items-center gap-2 border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 mb-6 backdrop-blur-sm">
+              <span
+                class="text-[10px] font-bold text-amber-400 tracking-[0.2em] uppercase">
+                Official Free Fire Competitive Platform
+              </span>
+            </div>
+
+            <h1
+              class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.05] mb-6 uppercase">
+              <span class="text-white">Compete For</span><br>
+              <span
+                class="bg-gradient-to-r from-amber-200 via-amber-400 to-amber-600 bg-clip-text text-transparent">
+                Real Cash Prizes
+              </span>
+            </h1>
+
+            <p
+              class="text-[#a89878] text-sm sm:text-base max-w-xl mb-8 leading-relaxed">
+              India's most trusted Free Fire competitive arena. Scheduled paid
+              scrims, verified hosts, encrypted room releases, and instant
+              payouts straight to your wallet.
+            </p>
+
+            <div class="flex flex-wrap items-center gap-3">
+              <% if (!user) { %>
+              <a href="/register"
+                class="group relative inline-flex items-center gap-2 overflow-hidden border border-amber-400 bg-gradient-to-b from-amber-300 to-amber-500 px-6 py-3 text-sm font-black uppercase tracking-wider text-black transition shadow-[0_0_30px_-5px_rgba(245,200,66,0.8)] hover:from-amber-200 hover:to-amber-400">
+                <span
+                  class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/50 to-transparent transition-transform duration-700 group-hover:translate-x-full"></span>
+                <%- icon('zap', 'h-4 w-4 fill-black relative') %>
+                <span class="relative">Create Account</span>
+              </a>
+              <% } else { %>
+              <a href="/dashboard"
+                class="group relative inline-flex items-center gap-2 overflow-hidden border border-amber-400 bg-gradient-to-b from-amber-300 to-amber-500 px-6 py-3 text-sm font-black uppercase tracking-wider text-black transition shadow-[0_0_30px_-5px_rgba(245,200,66,0.8)] hover:from-amber-200 hover:to-amber-400">
+                <span
+                  class="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/50 to-transparent transition-transform duration-700 group-hover:translate-x-full"></span>
+                <%- icon('zap', 'h-4 w-4 fill-black relative') %>
+                <span class="relative">My Dashboard</span>
+              </a>
+              <% } %>
+              <a href="/matches"
+                class="inline-flex items-center gap-2 border border-amber-500/40 bg-black/40 backdrop-blur-sm px-6 py-3 text-sm font-bold uppercase tracking-wider text-amber-300 hover:bg-amber-500/10 hover:border-amber-400 transition">
+                <%- icon('swords', 'h-4 w-4') %>
+                Browse Scrims
+              </a>
+            </div>
+
+            <div
+              class="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-[11px] font-bold uppercase tracking-[0.2em]">
+              <span class="text-[#8a7d63]">▸ <span
+                  class="text-white">₹12.5L+</span> paid out</span>
+              <span class="text-[#8a7d63]">▸ <span
+                  class="text-white">4,000+</span> matches</span>
+              <span class="text-[#8a7d63]">▸ <span
+                  class="text-amber-400">100%</span> verified</span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+
+      <!-- ============================================================
+           FEATURED SCRIMS
+           ============================================================ -->
+      <section class="py-12 border-b border-amber-500/20">
+
+        <div class="flex items-center justify-between mb-6">
+          <h2
+            class="text-sm font-black uppercase tracking-[0.25em] text-white flex items-center gap-3">
+            <span
+              class="h-px w-8 bg-gradient-to-r from-amber-400 to-transparent"></span>
+            Featured Scrims
+          </h2>
+          <a href="/matches"
+            class="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-400 hover:text-amber-300 transition">
+            View All →
+          </a>
+        </div>
+
+        <% if (!matches.length) { %>
+        <div
+          class="border border-amber-500/20 bg-black/60 backdrop-blur-sm py-14 text-center">
+          <p class="text-sm text-[#8a7d63] uppercase tracking-widest font-bold">
+            No active scrims right now</p>
+        </div>
+        <% } else { %>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <% matches.forEach(function (m) { %>
+          <%- include('partials/match-card', { m: m }) %>
+          <% }) %>
+        </div>
+        <% } %>
+
+      </section>
+
+      <!-- ============================================================
+           FORMATS
+           ============================================================ -->
+      <section class="py-12 border-b border-amber-500/20">
+
+        <h2
+          class="text-sm font-black uppercase tracking-[0.25em] text-white flex items-center gap-3 mb-8">
+          <span
+            class="h-px w-8 bg-gradient-to-r from-amber-400 to-transparent"></span>
+          Game Formats
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+          <div
+            class="group relative border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-6 transition hover:border-amber-400/70 hover:shadow-[0_0_40px_-10px_rgba(245,200,66,0.5)]">
+            <div
+              class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent"></div>
+
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                class="flex h-10 w-10 items-center justify-center border border-amber-500/40 bg-amber-500/10">
+                <%- icon('zap', 'h-5 w-5 text-amber-400') %>
+              </div>
+              <div>
+                <h3
+                  class="font-black text-white text-base uppercase tracking-tight">
+                  Lone Wolf
+                </h3>
+                <div
+                  class="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-500/70">
+                  1v1 · 2v2
+                </div>
+              </div>
+            </div>
+
+            <p class="text-xs text-[#a89878] leading-relaxed mb-6">
+              Fast-paced round-based duels on Iron Cage. Pure mechanical gun
+              skill without external distractions.
+            </p>
+
+            <div
+              class="flex items-center justify-between pt-4 border-t border-amber-500/15">
+              <span
+                class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8a7d63]">Entry
+                From</span>
+              <span
+                class="text-lg font-black bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent">₹20</span>
+            </div>
+          </div>
+
+          <div
+            class="group relative border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-6 transition hover:border-amber-400/70 hover:shadow-[0_0_40px_-10px_rgba(245,200,66,0.5)]">
+            <div
+              class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent"></div>
+
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                class="flex h-10 w-10 items-center justify-center border border-amber-500/40 bg-amber-500/10">
+                <%- icon('users', 'h-5 w-5 text-amber-400') %>
+              </div>
+              <div>
+                <h3
+                  class="font-black text-white text-base uppercase tracking-tight">
+                  Clash Squad
+                </h3>
+                <div
+                  class="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-500/70">
+                  2v2 · 4v4
+                </div>
+              </div>
+            </div>
+
+            <p class="text-xs text-[#a89878] leading-relaxed mb-6">
+              Tactical team skirmishes across Bermuda &amp; Kalahari.
+              Synchronize strategies with auto-allocated teams.
+            </p>
+
+            <div
+              class="flex items-center justify-between pt-4 border-t border-amber-500/15">
+              <span
+                class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8a7d63]">Entry
+                From</span>
+              <span
+                class="text-lg font-black bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent">₹50</span>
+            </div>
+          </div>
+
+          <div
+            class="group relative border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-6 transition hover:border-amber-400/70 hover:shadow-[0_0_40px_-10px_rgba(245,200,66,0.5)]">
+            <div
+              class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/60 to-transparent"></div>
+
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                class="flex h-10 w-10 items-center justify-center border border-amber-500/40 bg-amber-500/10">
+                <%- icon('trophy', 'h-5 w-5 text-amber-400') %>
+              </div>
+              <div>
+                <h3
+                  class="font-black text-white text-base uppercase tracking-tight">
+                  Battle Royale
+                </h3>
+                <div
+                  class="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-500/70">
+                  Solo · Squad
+                </div>
+              </div>
+            </div>
+
+            <p class="text-xs text-[#a89878] leading-relaxed mb-6">
+              Free-for-all survival tournaments. Last survivor and high kill
+              counts claim the grand prize pool.
+            </p>
+
+            <div
+              class="flex items-center justify-between pt-4 border-t border-amber-500/15">
+              <span
+                class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8a7d63]">Entry
+                From</span>
+              <span
+                class="text-lg font-black bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent">₹30</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============================================================
+           HOW IT WORKS
+           ============================================================ -->
+      <section class="py-12 border-b border-amber-500/20">
+
+        <h2
+          class="text-sm font-black uppercase tracking-[0.25em] text-white flex items-center gap-3 mb-8">
+          <span
+            class="h-px w-8 bg-gradient-to-r from-amber-400 to-transparent"></span>
+          How It Works
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+          <% [
+          ['Link Free Fire UID',
+          'Sign up and register your in-game Free Fire UID and nickname to your profile.'],
+          ['Reserve Slot & Enter',
+          'Select any upcoming match and pay the entry fee with your wallet balance.'],
+          ['Unlock Room & Play',
+          'At release time, copy your secret Room ID & Password to join the custom match in Free Fire.'],
+          ['Get Paid Instantly',
+          'After match completion, the verified result credits prize money straight to your ledger wallet.'],
+          ].forEach(function (s, i) { %>
+
+          <div
+            class="relative border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-5">
+            <div class="flex items-center gap-3 mb-4">
+              <div
+                class="flex h-10 w-10 items-center justify-center border border-amber-400 bg-gradient-to-b from-amber-300 to-amber-500 text-black font-black text-sm shadow-[0_0_20px_-4px_rgba(245,200,66,0.9)]"
+                style="clip-path: polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%);">
+                <%= i + 1 %>
+              </div>
+              <span
+                class="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-500/70">
+                Step 0<%= i + 1 %>
+              </span>
+            </div>
+            <h4
+              class="font-black text-white text-sm mb-2 uppercase tracking-tight">
+              <%= s[0] %>
+            </h4>
+            <p class="text-xs text-[#a89878] leading-relaxed"><%= s[1] %></p>
+          </div>
+
+          <% }) %>
+
+        </div>
+      </section>
+
+      <!-- ============================================================
+           TRUST
+           ============================================================ -->
+      <section class="py-12 border-b border-amber-500/20">
+
+        <h2
+          class="text-sm font-black uppercase tracking-[0.25em] text-white flex items-center gap-3 mb-8">
+          <span
+            class="h-px w-8 bg-gradient-to-r from-amber-400 to-transparent"></span>
+          Why FFM
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+          <div
+            class="border border-amber-500/20 bg-black/60 backdrop-blur-sm p-6">
+            <div
+              class="flex h-10 w-10 items-center justify-center border border-amber-500/40 bg-amber-500/10 mb-4">
+              <%- icon('shield-check', 'h-5 w-5 text-amber-400') %>
+            </div>
+            <h4
+              class="font-black text-white text-sm mb-2 uppercase tracking-tight">
+              Transparent Ledger
+            </h4>
+            <p class="text-xs text-[#a89878] leading-relaxed">Every rupee is
+              tracked with an append-only transaction ledger and idempotency
+              keys.</p>
+          </div>
+
+          <div
+            class="border border-amber-500/20 bg-black/60 backdrop-blur-sm p-6">
+            <div
+              class="flex h-10 w-10 items-center justify-center border border-amber-500/40 bg-amber-500/10 mb-4">
+              <%- icon('lock', 'h-5 w-5 text-amber-400') %>
+            </div>
+            <h4
+              class="font-black text-white text-sm mb-2 uppercase tracking-tight">
+              Encrypted Rooms
+            </h4>
+            <p class="text-xs text-[#a89878] leading-relaxed">Room credentials
+              are AES-256 encrypted and released strictly to registered
+              players.</p>
+          </div>
+
+          <div
+            class="border border-amber-500/20 bg-black/60 backdrop-blur-sm p-6">
+            <div
+              class="flex h-10 w-10 items-center justify-center border border-amber-500/40 bg-amber-500/10 mb-4">
+              <%- icon('circle-check-big', 'h-5 w-5 text-amber-400') %>
+            </div>
+            <h4
+              class="font-black text-white text-sm mb-2 uppercase tracking-tight">
+              Verified Results
+            </h4>
+            <p class="text-xs text-[#a89878] leading-relaxed">Official hosts
+              verify results with dispute protection and automated
+              settlement.</p>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============================================================
+           FINAL CTA
+           ============================================================ -->
+      <section class="py-14">
+        <div
+          class="relative border border-amber-500/40 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-8 sm:p-12 overflow-hidden">
+
+          <div
+            class="absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_50%_0%,rgba(245,200,66,0.15),transparent_60%)] pointer-events-none">
+          </div>
+
+          <div
+            class="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-amber-400/60"></div>
+          <div
+            class="absolute top-2 right-2 w-6 h-6 border-r-2 border-t-2 border-amber-400/60"></div>
+          <div
+            class="absolute bottom-2 left-2 w-6 h-6 border-l-2 border-b-2 border-amber-400/60"></div>
+          <div
+            class="absolute bottom-2 right-2 w-6 h-6 border-r-2 border-b-2 border-amber-400/60"></div>
+
+          <div class="relative text-center">
+            <div
+              class="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-400 mb-4">
+              From Underdogs To Undergods
+            </div>
+            <h3
+              class="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight mb-4">
+              Ready to Enter the Arena?
+            </h3>
+            <p class="text-sm text-[#a89878] max-w-lg mx-auto mb-8">
+              Create your free account and join your first paid scrim in under
+              a minute.
+            </p>
+            <% if (!user) { %>
+            <a href="/register"
+              class="inline-flex items-center gap-2 bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black px-8 py-3.5 text-sm font-black uppercase tracking-wider transition shadow-[0_0_40px_-5px_rgba(245,200,66,0.8)] border border-amber-400">
+              Get Started →
+            </a>
+            <% } else { %>
+            <a href="/matches"
+              class="inline-flex items-center gap-2 bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black px-8 py-3.5 text-sm font-black uppercase tracking-wider transition shadow-[0_0_40px_-5px_rgba(245,200,66,0.8)] border border-amber-400">
+              Find a Scrim →
+            </a>
+            <% } %>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ============================================================
+         FOOTER
+         ============================================================ -->
+    <footer class="border-t border-amber-500/20 bg-black/80 backdrop-blur-sm">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+
+        <div
+          class="flex flex-col sm:flex-row items-center justify-between gap-6 mb-6">
+
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 relative">
+              <img src="/img/logo.png" alt="FFM"
+                class="w-full h-full object-contain" draggable="false" />
+            </div>
+            <div>
+              <div
+                class="text-sm font-black text-white uppercase tracking-tight">
+                FFM Arena
+              </div>
+              <div
+                class="text-[10px] text-amber-500/70 uppercase tracking-[0.2em] font-bold">
+                Paid Scrims
+              </div>
+            </div>
+          </div>
+
+          <nav
+            class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs font-bold uppercase tracking-[0.2em] text-[#8a7d63]">
+            <a href="/terms" class="hover:text-amber-400 transition">Terms</a>
+            <a href="/privacy"
+              class="hover:text-amber-400 transition">Privacy</a>
+            <a href="/rules" class="hover:text-amber-400 transition">Rules</a>
+            <a href="/disputes"
+              class="hover:text-amber-400 transition">Disputes</a>
+          </nav>
+
+        </div>
+
+        <div
+          class="text-center text-[10px] text-[#6b5f4a] pt-6 border-t border-amber-500/10 uppercase tracking-[0.2em] font-bold">
+          © <%= new Date().getFullYear() %> FFM Tournament Platform · All Rights
+          Reserved · Not Affiliated With Garena
+        </div>
+
+      </div>
+    </footer>
+
+  </div>
+
+</div>

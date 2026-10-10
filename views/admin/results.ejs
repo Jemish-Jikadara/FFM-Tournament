@@ -1,0 +1,214 @@
+<%- include('../partials/admin-open') %>
+<div>
+  <h1 class="h1">Result Verification</h1>
+  <p class="text-xs text-[#8a7d63] mt-1">Enter results after a match, then an
+    admin approves to pay prizes</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <!-- ============================================================
+       LEFT COLUMN: MATCH LISTS
+       ============================================================ -->
+  <div class="space-y-4">
+
+    <!-- NEEDS RESULT -->
+    <section
+      class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm overflow-hidden">
+      <h2 class="h2 p-4 border-b border-amber-500/20">Needs Result</h2>
+      <% if (!pending.length) { %>
+      <div class="p-6 text-center text-xs text-[#8a7d63]">Nothing waiting.</div>
+      <% } %>
+      <% pending.forEach(function (m) { %>
+      <a href="/admin/results?match=<%= m._id %>"
+        class="block p-4 border-b border-amber-500/10 transition hover:bg-amber-500/[0.04] <%= selected && String(selected._id) === String(m._id) ? 'bg-amber-500/[0.08] border-l-2 border-l-amber-400' : '' %>">
+        <div class="flex justify-between items-center text-xs">
+          <span class="font-bold text-[#e8dfc9]"><%= m.modeName %></span>
+          <span
+            class="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase <%= m.status === 'RESULT_SUBMITTED' ? statusPill('FULL') : statusPill('IN_PROGRESS') %>">
+            <%= m.status === 'RESULT_SUBMITTED' ? 'Review' : 'Enter' %>
+          </span>
+        </div>
+        <div class="text-[11px] text-[#8a7d63] font-mono mt-1"><%=
+          m.publicMatchCode %> · <%= m.currentPlayers() %> players</div>
+      </a>
+      <% }) %>
+    </section>
+
+    <!-- RECENTLY SETTLED -->
+    <section
+      class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm overflow-hidden">
+      <h2 class="h2 p-4 border-b border-amber-500/20">Recently Settled</h2>
+      <% if (!completed.length) { %>
+      <div class="p-6 text-center text-xs text-[#8a7d63]">None yet.</div>
+      <% } %>
+      <% completed.forEach(function (m) { %>
+      <a href="/matches/<%= m._id %>"
+        class="block p-4 border-b border-amber-500/10 hover:bg-amber-500/[0.04] transition text-xs">
+        <span class="font-bold text-[#e8dfc9]"><%= m.modeName %></span>
+        <span class="font-mono text-[#8a7d63]"><%= m.publicMatchCode %></span>
+      </a>
+      <% }) %>
+    </section>
+
+  </div>
+
+  <!-- ============================================================
+       RIGHT COLUMN: SELECTED MATCH DETAILS
+       ============================================================ -->
+  <div class="lg:col-span-2">
+
+    <% if (!selected) { %>
+    <div
+      class="card border-amber-500/20 bg-[#0f0c08]/60 backdrop-blur-sm p-12 text-center">
+      <%- icon('trophy', 'mx-auto h-10 w-10 text-amber-500/40 mb-3') %>
+      <p class="text-sm text-[#8a7d63]">Select a match on the left.</p>
+    </div>
+    <% } else { %>
+    <%
+    const m = selected;
+    const byUser = {};
+    (m.results || []).forEach(function (r) { byUser[String(r.user)] = r; });
+    const canEdit = m.status === 'ACTIVE' || m.status === 'RESULT_SUBMITTED';
+    const submitted = m.status === 'RESULT_SUBMITTED';
+    %>
+
+    <div
+      class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-6 space-y-5">
+
+      <!-- HEADER -->
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="h2"><%= m.modeName %></h2>
+          <p class="text-xs text-[#8a7d63] font-mono">
+            <%= m.publicMatchCode %> · Prize pool
+            <span
+              class="bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent font-bold"><%=
+              paise(m.prizePoolPaise) %></span>
+          </p>
+        </div>
+        <span
+          class="rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider <%= statusPill(m.displayStatus()) %>">
+          <%= statusLabel(m.displayStatus()) %>
+        </span>
+      </div>
+
+      <!-- REJECTION BANNER -->
+      <% if (m.rejectReason) { %>
+      <div
+        class="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
+        Previously rejected: <%= m.rejectReason %>
+      </div>
+      <% } %>
+
+      <!-- CANNOT EDIT -->
+      <% if (!canEdit) { %>
+      <p class="text-xs text-[#8a7d63]">This match is <%= m.status.toLowerCase()
+        %>; results can't be changed.</p>
+
+      <!-- NO PLAYERS -->
+      <% } else if (!m.registrations.length) { %>
+      <p class="text-xs text-[#8a7d63]">No players registered.</p>
+
+      <!-- NOT STARTED -->
+      <% } else if (m.status === 'ACTIVE' && m.displayStatus() !==
+      'IN_PROGRESS') { %>
+      <p class="text-xs text-amber-400">The match hasn't started yet. Results
+        can be entered once it starts.</p>
+
+      <!-- RESULT FORM -->
+      <% } else { %>
+      <form method="post" action="/admin/results/<%= m._id %>/submit"
+        class="space-y-4">
+        <p class="text-[11px] text-[#8a7d63]">
+          Placement 1 = winner. If several players share placement 1 (a winning
+          team), the prize pool is split equally between them.
+        </p>
+
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-black/60 border-b border-amber-500/20">
+              <tr>
+                <th class="th text-amber-400">Player</th>
+                <th class="th text-amber-400 w-28">Placement</th>
+                <th class="th text-amber-400 w-28">Kills</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-amber-500/10">
+              <% m.registrations.forEach(function (r, i) { const u = r.user;
+              const ex = byUser[String(u._id)]; %>
+              <tr class="hover:bg-amber-500/[0.03] transition">
+                <td class="td">
+                  <input type="hidden" name="user" value="<%= u._id %>">
+                  <span class="font-bold text-[#e8dfc9]"><%= u.profile &&
+                    u.profile.displayName %></span>
+                  <span class="text-[#8a7d63] font-mono"><%= u.profile &&
+                    u.profile.freeFireName %> · <%= u.profile &&
+                    u.profile.freeFireUid %></span>
+                </td>
+                <td class="td">
+                  <input name="placement" type="number" min="1" required
+                    value="<%= ex ? ex.placement : (i === 0 ? 1 : 2) %>"
+                    class="input !py-1.5">
+                </td>
+                <td class="td">
+                  <input name="kills" type="number" min="0" required
+                    value="<%= ex ? ex.kills : 0 %>" class="input !py-1.5">
+                </td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+
+        <div>
+          <label class="label" for="notes">Notes (optional)</label>
+          <input id="notes" name="notes" maxlength="500"
+            value="<%= m.resultNotes || '' %>" class="input">
+        </div>
+
+        <button type="submit"
+          class="btn-primary bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black border border-amber-400 shadow-[0_0_24px_-6px_rgba(245,200,66,0.7)]">
+          <%= submitted ? 'Update Submitted Result' : 'Submit Result' %>
+        </button>
+      </form>
+
+      <!-- APPROVAL SECTION -->
+      <% if (submitted) { %>
+      <div class="border-t border-amber-500/20 pt-5">
+        <h3
+          class="text-xs font-extrabold uppercase tracking-wider text-amber-400 mb-3">Awaiting
+          approval</h3>
+
+        <% if (canApprove) { %>
+        <div class="flex flex-wrap gap-3 items-start">
+          <form method="post" action="/admin/results/<%= m._id %>/approve"
+            data-confirm="Approve and pay out prizes? This cannot be undone.">
+            <button
+              class="btn-primary bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black border border-amber-400 shadow-[0_0_24px_-6px_rgba(245,200,66,0.7)]"
+              type="submit">
+              <%- icon('circle-check-big', 'h-4 w-4') %> Approve &amp; Pay
+              Prizes
+            </button>
+          </form>
+          <form method="post" action="/admin/results/<%= m._id %>/reject"
+            class="flex gap-2">
+            <input name="reason" placeholder="Reason" class="input !w-48 !py-2">
+            <button class="btn-danger" type="submit">Reject</button>
+          </form>
+        </div>
+        <% } else { %>
+        <p class="text-xs text-[#8a7d63]">An admin must approve this result
+          before prizes are paid.</p>
+        <% } %>
+      </div>
+      <% } %>
+      <% } %>
+
+    </div>
+    <% } %>
+
+  </div>
+
+</div>
+<%- include('../partials/admin-close') %>

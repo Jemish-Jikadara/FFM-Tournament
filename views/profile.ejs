@@ -1,0 +1,90 @@
+<% const p = user.profile || {}; %>
+<div class="py-8 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto space-y-6">
+  <div
+    class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="h1">My Profile</h1>
+      <p class="text-xs text-[#8a7d63] mt-1">Manage your player identity and
+        account security</p>
+    </div>
+    <a href="/dashboard"
+      class="inline-flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-amber-300 hover:bg-amber-500/20 hover:border-amber-400 transition shadow-[0_0_20px_-5px_rgba(245,200,66,0.5)]">
+      <%- icon('layout-dashboard', 'h-4 w-4') %>
+      Dashboard
+    </a>
+  </div>
+
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <% [['Matches', p.totalMatches || 0], ['Wins', p.totalWins || 0], ['Losses',
+    p.totalLosses || 0], ['Winnings',
+    paise(p.totalWinningsPaise)]].forEach(function (s) { %>
+    <div
+      class="rounded-xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-4">
+      <span
+        class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] block"><%=
+        s[0] %></span>
+      <span class="text-lg font-black text-white"><%= s[1] %></span>
+    </div>
+    <% }) %>
+  </div>
+
+  <form method="post" action="/profile"
+    class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-6 space-y-4">
+    <h2 class="h2">Player Identity</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div><label class="label" for="email">Email</label><input id="email"
+          class="input opacity-60" value="<%= user.email %>" disabled></div>
+      <div><label class="label" for="display_name">Display Name</label><input
+          id="display_name" name="display_name" required maxlength="30"
+          value="<%= p.displayName || '' %>" class="input"></div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="label !text-amber-400" for="free_fire_uid">Free Fire
+          UID</label>
+        <input id="free_fire_uid" name="free_fire_uid" required
+          inputmode="numeric" pattern="\d{5,15}"
+          value="<%= p.freeFireUid || '' %>" placeholder="e.g. 194820194"
+          class="input !border-amber-500/40 font-mono">
+      </div>
+      <div>
+        <label class="label !text-amber-400" for="free_fire_name">Free Fire
+          Nickname</label>
+        <input id="free_fire_name" name="free_fire_name" required maxlength="40"
+          value="<%= p.freeFireName || '' %>" placeholder="Exact IGN"
+          class="input !border-amber-500/40">
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center gap-2 text-xs">
+      <span class="text-[#8a7d63]">UID verification:</span>
+      <span
+        class="rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider <%= stateBadge(user.uidStatus) %>"><%=
+        user.uidStatus %></span>
+      <% if (user.uidStatus === 'REJECTED' && user.uidNotes) { %>
+      <span class="text-rose-400">Reason: <%= user.uidNotes %></span>
+      <% } %>
+    </div>
+    <p class="text-[11px] text-[#8a7d63]">Changing your UID sends it back for
+      admin verification.</p>
+    <button type="submit"
+      class="btn-primary bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black shadow-[0_0_30px_-5px_rgba(245,200,66,0.7)] border border-amber-400">Save
+      Profile</button>
+  </form>
+
+  <form method="post" action="/profile/password"
+    class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-6 space-y-4">
+    <h2 class="h2">Change Password</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div><label class="label" for="current_password">Current
+          Password</label><input id="current_password" type="password"
+          name="current_password" required autocomplete="current-password"
+          class="input"></div>
+      <div><label class="label" for="new_password">New Password</label><input
+          id="new_password" type="password" name="new_password" required
+          minlength="6" autocomplete="new-password" class="input"></div>
+    </div>
+    <button type="submit"
+      class="btn-ghost border-amber-500/30 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400">Update
+      Password</button>
+  </form>
+</div>

@@ -1,0 +1,127 @@
+<%- include('../partials/admin-open') %>
+<div>
+  <h1 class="h1">Admin Dashboard</h1>
+  <p class="text-xs text-[#8a7d63] mt-1">Platform overview and pending
+    actions</p>
+</div>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <% [
+  ['Total Users', stats.users, 'users', 'text-white'],
+  ['Total Matches', stats.matches, 'swords', 'text-white'],
+  ['Active Matches', stats.activeMatches, 'flame', 'text-amber-400'],
+  ['Awaiting Result', stats.needsResult, 'trophy', stats.needsResult ?
+  'text-amber-400' : 'text-white'],
+  ['Open Disputes', stats.openDisputes, 'triangle-alert', stats.openDisputes ?
+  'text-rose-400' : 'text-white'],
+  ['UIDs Pending', stats.pendingUids, 'gamepad-2', stats.pendingUids ?
+  'text-amber-400' : 'text-white'],
+  ['Total Deposits', paise(stats.deposits), 'wallet', 'text-emerald-400'],
+  ['Pending Payouts', withdrawals.length, 'arrow-up-right', withdrawals.length ?
+  'text-amber-400' : 'text-white'],
+  ].forEach(function (s) { %>
+  <div
+    class="rounded-xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-5">
+    <span
+      class="flex items-center gap-1.5 text-[11px] text-[#8a7d63] font-semibold uppercase tracking-wider mb-2">
+      <%- icon(s[2], 'h-4 w-4 text-amber-500/70') %> <%= s[0] %>
+    </span>
+    <div class="text-2xl font-black <%= s[3] %>"><%= s[1] %></div>
+  </div>
+  <% }) %>
+</div>
+
+<section
+  class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm overflow-hidden">
+  <div
+    class="p-5 border-b border-amber-500/20 flex items-center justify-between">
+    <h2 class="h2">Pending Withdrawals</h2>
+    <span class="text-xs font-mono text-[#a89878]"><%= withdrawals.length
+      %></span>
+  </div>
+  <% if (!withdrawals.length) { %>
+  <div class="p-8 text-center text-xs text-[#8a7d63]">No pending withdrawal
+    requests.</div>
+  <% } else { %>
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead class="bg-black/60 border-b border-amber-500/20">
+        <tr>
+          <th class="th text-amber-400">Player</th>
+          <th class="th text-amber-400">Details</th>
+          <th class="th text-amber-400">Amount</th>
+          <th class="th text-amber-400">Requested</th>
+          <th class="th text-amber-400 text-right">Action</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-amber-500/10">
+        <% withdrawals.forEach(function (w) { %>
+        <tr class="hover:bg-amber-500/[0.03] transition">
+          <td class="td">
+            <span class="font-bold text-[#e8dfc9]"><%= w.user ? (w.user.profile
+              && w.user.profile.displayName) || w.user.email : 'Deleted user'
+              %></span><br>
+            <span class="text-[#8a7d63]"><%= w.user ? w.user.email : ''
+              %></span>
+          </td>
+          <td class="td text-[#a89878]"><%= w.description %></td>
+          <td class="td font-mono font-bold text-white"><%= paise(w.amountPaise)
+            %></td>
+          <td class="td text-[#a89878]"><%= date(w.createdAt) %></td>
+          <td class="td text-right">
+            <% if (canPay) { %>
+            <div class="flex justify-end gap-2">
+              <form method="post" action="/admin/withdrawals/<%= w._id %>/paid"
+                data-confirm="Mark as paid? Make sure you have sent the money by UPI.">
+                <button
+                  class="btn-primary !py-1.5 !px-3 bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black border border-amber-400 shadow-[0_0_20px_-5px_rgba(245,200,66,0.7)]"
+                  type="submit">Mark Paid</button>
+              </form>
+              <form method="post"
+                action="/admin/withdrawals/<%= w._id %>/reject"
+                data-confirm="Reject and return the money to the player's winnings?">
+                <button class="btn-danger" type="submit">Reject</button>
+              </form>
+            </div>
+            <% } else { %>
+            <span class="text-[#8a7d63] italic">Admin only</span>
+            <% } %>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</section>
+
+<section
+  class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm overflow-hidden">
+  <div
+    class="p-5 border-b border-amber-500/20 flex items-center justify-between">
+    <h2 class="h2">Recently Created Matches</h2>
+    <a href="/admin/matches"
+      class="text-xs font-bold text-amber-400 hover:text-amber-300 uppercase tracking-wider">Manage
+      all</a>
+  </div>
+  <div class="divide-y divide-amber-500/10">
+    <% recent.forEach(function (m) { const st = m.displayStatus(); %>
+    <div
+      class="flex items-center justify-between p-4 text-xs hover:bg-amber-500/[0.03] transition">
+      <div>
+        <span class="font-bold text-[#e8dfc9]"><%= m.modeName %></span>
+        <span class="font-mono text-[#8a7d63] ml-1"><%= m.publicMatchCode
+          %></span><br>
+        <span class="text-[#8a7d63]"><%= date(m.matchStartAt) %></span>
+      </div>
+      <span
+        class="rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider <%= statusPill(st) %>"><%=
+        statusLabel(st) %></span>
+    </div>
+    <% }) %>
+    <% if (!recent.length) { %>
+    <div class="p-6 text-center text-xs text-[#8a7d63]">No matches yet.</div>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/admin-close') %>

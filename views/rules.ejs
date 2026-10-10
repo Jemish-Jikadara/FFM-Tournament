@@ -1,0 +1,31 @@
+<div class="py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6">
+  <a href="/"
+    class="inline-flex items-center gap-1.5 text-xs text-[#8a7d63] hover:text-amber-400 transition">
+    <%- icon('arrow-left', 'h-4 w-4') %> Back to Home
+  </a>
+  <div
+    class="rounded-2xl border border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-8 space-y-6">
+    <div class="flex items-center gap-3 border-b border-amber-500/20 pb-4">
+      <%- icon('shield-check', 'h-7 w-7 text-amber-400') %>
+      <h1
+        class="text-2xl font-black text-white uppercase tracking-tight">Official
+        Tournament Rules</h1>
+    </div>
+    <% [
+    ['1. Player Eligibility',
+    "All tournament participants must be at least 18 years of age. A valid Free Fire UID and exact in-game nickname must be registered to the player's platform account prior to joining any scheduled match."],
+    ['2. Room Release & Entry Protocol',
+    'Custom Room ID and Password are encrypted and released strictly to registered competitors at the configured room release time (typically 10-15 minutes before scheduled match start). Players must join the custom room immediately upon release. Failure to join the room before start time forfeits participation without refund.'],
+    ['3. Strict Anti-Cheating & Integrity',
+    'Do not modify, inject into, hook into, or reverse engineer the Free Fire client. Emulators, packet manipulation, aimbots, speed hacks, or wall hacks result in an immediate lifetime ban, forfeiture of all wallet balances, and permanent blacklisting of player UIDs and payment destinations.'],
+    ['4. Result Verification & Prize Settlements',
+    "Per platform standards, match results are officially entered and verified by assigned match hosts and admins. Once verified, the prize pool is settled into winners' platform wallets with immutable ledger tracking."],
+    ].forEach(function (s) { %>
+    <section class="space-y-2 text-xs text-[#e8dfc9] leading-relaxed">
+      <h2 class="text-sm font-extrabold text-white uppercase tracking-wider"><%=
+        s[0] %></h2>
+      <p class="text-[#a89878]"><%= s[1] %></p>
+    </section>
+    <% }) %>
+  </div>
+</div>

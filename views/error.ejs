@@ -1,0 +1,7 @@
+<div class="py-20 px-4 max-w-md mx-auto text-center space-y-4">
+  <%- icon('shield-alert', 'mx-auto h-12 w-12 text-rose-500') %>
+  <p class="text-5xl font-black text-white"><%= code %></p>
+  <h2 class="text-xl font-bold text-white"><%= code === 404 ? 'Page Not Found' : code === 403 ? 'Access Forbidden' : 'Something went wrong' %></h2>
+  <p class="text-xs text-slate-400"><%= message %></p>
+  <a href="/" class="inline-block text-xs font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-wider">Back to Home</a>
+</div>

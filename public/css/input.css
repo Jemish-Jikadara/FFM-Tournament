@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #090d16;
+  --foreground: #f1f5f9;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  min-height: 100vh;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #090d16; }
+::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+select option { background: #020617; color: #fff; }
+input[type="datetime-local"] { color-scheme: dark; }
+input[type="number"]::-webkit-inner-spin-button { opacity: .4; }
+
+@layer components {
+  .input {
+    @apply w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:border-emerald-500 focus:outline-none;
+  }
+  .input-icon { @apply pl-10; }
+  .label { @apply block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5; }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-white shadow transition hover:bg-emerald-500 cursor-pointer disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-200 transition hover:bg-slate-700 cursor-pointer;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs font-bold uppercase tracking-wider text-rose-400 transition hover:bg-rose-500/20 cursor-pointer;
+  }
+  .card { @apply rounded-2xl border border-slate-800 bg-slate-900/60; }
+  .page { @apply py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto; }
+  .h1 { @apply text-2xl sm:text-3xl font-black text-white uppercase tracking-tight; }
+  .h2 { @apply text-lg font-black uppercase text-white tracking-wider; }
+  .th { @apply px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-slate-400; }
+  .td { @apply px-4 py-3 text-xs text-slate-300; }
+}
