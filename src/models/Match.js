@@ -58,7 +58,7 @@ matchSchema.index({ 'registrations.user': 1 });
 
 matchSchema.pre('validate', function (next) {
   if (!this.publicMatchCode) {
-    this.publicMatchCode = 'CIQ-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+    this.publicMatchCode = 'FFM-' + Math.random().toString(36).slice(2, 8).toUpperCase();
   }
   next();
 });
