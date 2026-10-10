@@ -74,10 +74,10 @@ router.post('/register', guestOnly, limiter, wrap(async (req, res) => {
     profile: { displayName: form.displayName, freeFireUid: form.uid, freeFireName: form.ign },
   });
   await walletSvc.ensureWallet(user._id);
-  await notify(user._id, 'Welcome to ClashIQ', 'Your account is ready. Your Free Fire UID is pending admin verification.', '/profile');
+  await notify(user._id, 'Welcome to FFM', 'Your account is ready. Your Free Fire UID is pending admin verification.', '/profile');
 
   signIn(res, user);
-  res.flash('success', 'Account created! Welcome to ClashIQ.');
+  res.flash('success', 'Account created! Welcome to FFM.');
   res.redirect('/dashboard');
 }));
 
