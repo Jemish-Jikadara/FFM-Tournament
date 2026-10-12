@@ -1,0 +1,262 @@
+const express = require('express');
+const mongoose = require('mongoose');
+
+const Tournament = require('../models/Tournament');
+const TournamentTeam = require('../models/TournamentTeam');
+const Team = require('../models/Team');
+const TeamMember = require('../models/TeamMember');
+const User = require('../models/User');
+const wrap = require('../utils/wrap');
+const { requireAuth, requireRole } = require('../middleware/auth');
+const { ADMIN_ROLES } = require('../config/game');
+const walletSvc = require('../services/wallet');
+const { notify } = require('../services/notify');
+const { paise } = require('../utils/format');
+
+const router = express.Router();
+
+
+// ============================================================
+// PUBLIC — LIST TOURNAMENTS
+// ============================================================
+router.get('/tournaments', wrap(async (req, res) => {
+  const filter = req.query.status || 'ACTIVE';
+  const query = filter === 'ALL' ? {} : { status: { $in: ['OPEN', 'LIVE', 'COMPLETED'] } };
+
+  const tournaments = await Tournament.find(query)
+    .sort({ tournamentStartAt: 1, createdAt: -1 })
+    .limit(100)
+    .populate('host', 'profile email');
+
+  res.render('tournaments/list', {
+    title: 'Tournaments',
+    tournaments,
+    filter,
+  });
+}));
+
+
+// ============================================================
+// PUBLIC — TOURNAMENT DETAIL
+// ============================================================
+router.get('/tournaments/:id', wrap(async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(404).render('error', { code: 404, message: 'Tournament not found.' });
+  }
+
+  const tournament = await Tournament.findById(req.params.id)
+    .populate('host', 'profile email');
+
+  if (!tournament) {
+    return res.status(404).render('error', { code: 404, message: 'Tournament not found.' });
+  }
+
+  const teams = await TournamentTeam.find({ tournament: tournament._id })
+    .populate('igl', 'profile email')
+    .populate('team', 'name tag logo')
+    .sort({ slot: 1 });
+
+  // Is user's team registered?
+  let myRegistration = null;
+  let myTeam = null;
+
+  if (req.user && req.user.isIGL()) {
+    myTeam = await Team.findOne({ igl: req.user._id, status: 'ACTIVE' });
+    myRegistration = await TournamentTeam.findOne({
+      tournament: tournament._id,
+      igl: req.user._id,
+    });
+  }
+
+  res.render('tournaments/detail', {
+    title: tournament.name,
+    tournament,
+    teams,
+    myTeam,
+    myRegistration,
+  });
+}));
+
+
+// ============================================================
+// IGL — JOIN TOURNAMENT (show form)
+// ============================================================
+router.get('/tournaments/:id/join', requireAuth, wrap(async (req, res) => {
+  if (!req.user.isIGL()) {
+    res.flash('error', 'Only IGL accounts can join BR Squad tournaments.');
+    return res.redirect('/tournaments/' + req.params.id);
+  }
+
+  const tournament = await Tournament.findById(req.params.id);
+  if (!tournament) {
+    res.flash('error', 'Tournament not found.');
+    return res.redirect('/tournaments');
+  }
+
+  if (!tournament.canJoin()) {
+    res.flash('error', 'Registration is not open for this tournament.');
+    return res.redirect('/tournaments/' + tournament._id);
+  }
+
+  // Already registered?
+  const existing = await TournamentTeam.findOne({
+    tournament: tournament._id,
+    igl: req.user._id,
+  });
+  if (existing) {
+    res.flash('info', 'You are already registered for this tournament.');
+    return res.redirect('/tournaments/' + tournament._id);
+  }
+
+  const team = await Team.findOne({ igl: req.user._id, status: 'ACTIVE' });
+  if (!team) {
+    res.flash('error', 'You need to create a team before joining tournaments.');
+    return res.redirect('/team/create');
+  }
+
+  const members = await TeamMember.find({ team: team._id, status: 'ACTIVE' })
+    .populate('user', 'profile email uidStatus role')
+    .sort({ role: 1, joinedAt: 1 });
+
+  res.render('tournaments/join', {
+    title: 'Join ' + tournament.name,
+    tournament,
+    team,
+    members,
+    wallet: res.locals.wallet,
+    error: null,
+  });
+}));
+
+
+// ============================================================
+// IGL — JOIN TOURNAMENT (POST)
+// ============================================================
+router.post('/tournaments/:id/join', requireAuth, wrap(async (req, res) => {
+  if (!req.user.isIGL()) {
+    res.flash('error', 'Only IGL accounts can join.');
+    return res.redirect('/tournaments/' + req.params.id);
+  }
+
+  const tournament = await Tournament.findById(req.params.id);
+  if (!tournament || !tournament.canJoin()) {
+    res.flash('error', 'Tournament not available.');
+    return res.redirect('/tournaments');
+  }
+
+  // Already registered?
+  const existing = await TournamentTeam.findOne({
+    tournament: tournament._id,
+    igl: req.user._id,
+  });
+  if (existing) {
+    res.flash('info', 'You are already registered.');
+    return res.redirect('/tournaments/' + tournament._id);
+  }
+
+  // Check full
+  if (tournament.isFull()) {
+    res.flash('error', 'Tournament is full.');
+    return res.redirect('/tournaments/' + tournament._id);
+  }
+
+  // Validate team
+  const team = await Team.findOne({ igl: req.user._id, status: 'ACTIVE' });
+  if (!team) {
+    res.flash('error', 'No active team found.');
+    return res.redirect('/team/create');
+  }
+
+  // Validate team name
+  const teamName = String(req.body.team_name || team.name).trim();
+  const teamTag = String(req.body.team_tag || team.tag || '').trim().toUpperCase();
+
+  if (teamName.length < 3 || teamName.length > 40) {
+    res.flash('error', 'Team name must be 3-40 characters.');
+    return res.redirect('/tournaments/' + tournament._id + '/join');
+  }
+
+  // Already used by another team?
+  if (await TournamentTeam.exists({ tournament: tournament._id, teamName })) {
+    res.flash('error', 'This team name is already used in this tournament.');
+    return res.redirect('/tournaments/' + tournament._id + '/join');
+  }
+
+  // Validate selected players (must be 4, IGL + 3 from roster)
+  const selectedIds = Array.isArray(req.body.selected_players)
+    ? req.body.selected_players
+    : [req.body.selected_players].filter(Boolean);
+
+  if (selectedIds.length !== tournament.teamSize) {
+    res.flash('error', `You must select exactly ${tournament.teamSize} players (including yourself).`);
+    return res.redirect('/tournaments/' + tournament._id + '/join');
+  }
+
+  // Ensure IGL is included
+  const iglId = String(req.user._id);
+  if (!selectedIds.includes(iglId)) {
+    res.flash('error', 'You (IGL) must be included in the selected players.');
+    return res.redirect('/tournaments/' + tournament._id + '/join');
+  }
+
+  // Validate all selected are active members of the team
+  const activeMembers = await TeamMember.find({ team: team._id, status: 'ACTIVE' });
+  const activeUserIds = activeMembers.map((m) => String(m.user));
+
+  for (const id of selectedIds) {
+    if (!activeUserIds.includes(String(id))) {
+      res.flash('error', 'One or more selected players are not in your roster.');
+      return res.redirect('/tournaments/' + tournament._id + '/join');
+    }
+  }
+
+  // Check wallet balance
+  const wallet = await walletSvc.ensureWallet(req.user._id);
+  if (wallet.totalSpendable() < tournament.entryFeePaise) {
+    res.flash('error', `Insufficient balance. You need ${paise(tournament.entryFeePaise)} to join.`);
+    return res.redirect('/tournaments/' + tournament._id + '/join');
+  }
+
+  // Deduct entry fee
+  if (tournament.entryFeePaise > 0) {
+    const ok = await walletSvc.debitSpend(req.user._id, tournament.entryFeePaise, {
+      type: 'ENTRY_FEE',
+      description: `Entry fee for ${tournament.name}`,
+      referenceType: 'TOURNAMENT',
+      referenceId: tournament._id,
+      idempotencyKey: `TRN-ENTRY:${tournament._id}:${req.user._id}`,
+    });
+    if (!ok) {
+      res.flash('error', 'Could not deduct entry fee. Try again.');
+      return res.redirect('/tournaments/' + tournament._id + '/join');
+    }
+  }
+
+  // Assign next slot
+  const slot = tournament.registeredTeams + 1;
+
+  // Create registration
+  await TournamentTeam.create({
+    tournament: tournament._id,
+    team: team._id,
+    igl: req.user._id,
+    teamName,
+    teamTag: teamTag || undefined,
+    selectedPlayers: selectedIds.map((id, i) => ({ user: id, slot: i + 1 })),
+    slot,
+    entryPaidPaise: tournament.entryFeePaise,
+  });
+
+  // Increment counter
+  tournament.registeredTeams += 1;
+  await tournament.save();
+
+  // Notify
+  await notify(req.user._id, 'Tournament Registered', `Your team "${teamName}" is registered for ${tournament.name}. Slot #${slot}.`, '/tournaments/' + tournament._id);
+
+  res.flash('success', `Your team "${teamName}" is registered! Slot #${slot}.`);
+  res.redirect('/tournaments/' + tournament._id);
+}));
+
+
+module.exports = router;

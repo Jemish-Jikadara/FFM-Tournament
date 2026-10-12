@@ -111,12 +111,34 @@ function readMatchForm(b) {
   const mode = modeBySlug(b.mode);
   const errors = [];
   if (!mode) errors.push('Choose a valid game mode.');
+
   const entry = rupeesToPaise(b.entry_fee);
   const prize = rupeesToPaise(b.prize_pool);
   if (isNaN(entry)) errors.push('Entry fee must be a number (₹).');
   if (isNaN(prize)) errors.push('Prize pool must be a number (₹).');
-  const maxPlayers = parseInt(b.max_players, 10);
-  if (!(maxPlayers >= 2 && maxPlayers <= 100)) errors.push('Max players must be between 2 and 100.');
+
+  const isTournament = mode?.isTournament || false;
+
+  let maxPlayers = 0;
+  let maxTeams = null;
+  let totalMatches = null;
+  let teamSize = mode?.teamSize || 1;
+
+  if (isTournament) {
+    maxTeams = parseInt(b.max_teams, 10);
+    totalMatches = parseInt(b.total_matches, 10);
+    teamSize = parseInt(b.team_size, 10) || 4;
+
+    if (!(maxTeams >= 2 && maxTeams <= 24)) errors.push('Max teams must be between 2 and 24.');
+    if (!(totalMatches >= 1 && totalMatches <= 20)) errors.push('Total matches must be between 1 and 20.');
+    if (!(teamSize >= 2 && teamSize <= 6)) errors.push('Team size must be between 2 and 6.');
+
+    maxPlayers = maxTeams * teamSize;
+  } else {
+    maxPlayers = parseInt(b.max_players, 10);
+    if (!(maxPlayers >= 2 && maxPlayers <= 100)) errors.push('Max players must be between 2 and 100.');
+  }
+
   const times = {
     registrationStartAt: fromInput(b.registration_start_at),
     registrationCloseAt: fromInput(b.registration_close_at),
@@ -129,13 +151,42 @@ function readMatchForm(b) {
     if (times.registrationCloseAt > times.matchStartAt) errors.push('Registration must close before the match starts.');
     if (times.roomReleaseAt > times.matchStartAt) errors.push('Room release must be before match start.');
   }
+
   const map = MAPS.includes(b.map_name) ? b.map_name : 'Bermuda';
+
+  // ✅ Custom tournament name use karo (agar diya hai)
+  const tournamentName = isTournament ? String(b.tournament_name || '').trim() : '';
+  const displayName = (isTournament && tournamentName) ? tournamentName.slice(0, 80) : mode?.name;
+
   const data = {
-    mode: mode?.slug, modeName: mode?.name, matchFormat: mode?.format, teamSize: mode?.teamSize || 1,
-    mapName: map, maxPlayers, entryFeePaise: entry, prizePoolPaise: prize, ...times,
+    mode: mode?.slug,
+    modeName: displayName,        // ← Custom name yahan
+    matchFormat: mode?.format,
+    teamSize,
+    mapName: map,
+    maxPlayers,
+    entryFeePaise: entry,
+    prizePoolPaise: prize,
+    ...times,
     rulesText: String(b.rules_text || '').slice(0, 2000),
   };
-  return { data, errors, roomId: String(b.room_id || '').trim(), roomPassword: String(b.room_password || '').trim() };
+
+  const tournamentData = isTournament ? {
+    isTournament: true,
+    maxTeams,
+    totalMatches,
+    teamSize,
+    name: displayName,            // ← Same custom name
+    description: String(b.tournament_description || '').slice(0, 500),
+    grandPrizePaise: prize,
+  } : { isTournament: false };
+
+  return {
+    data, errors,
+    roomId: String(b.room_id || '').trim(),
+    roomPassword: String(b.room_password || '').trim(),
+    tournamentData,
+  };
 }
 
 const defaultForm = () => {
@@ -143,25 +194,65 @@ const defaultForm = () => {
   const now = Date.now();
   const m = (mins) => toInput(new Date(now + mins * 60000));
   return {
-    mode: 'clash-squad-4v4', map_name: 'Bermuda', entry_fee: '50', prize_pool: '350', max_players: 8,
-    registration_start_at: m(0), registration_close_at: m(25), room_release_at: m(20), match_start_at: m(30),
+    mode: 'clash-squad-4v4', map_name: 'Bermuda',
+    entry_fee: '50', prize_pool: '350', max_players: 8,
+    registration_start_at: m(0), registration_close_at: m(25),
+    room_release_at: m(20), match_start_at: m(30),
     room_id: '', room_password: '', rules_text: '',
+    // Tournament defaults
+    max_teams: 12, total_matches: 6, team_size: 4,
+    tournament_name: '', tournament_description: '',
   };
 };
 
 router.get('/matches/create', requireRole(STAFF), (req, res) => {
-  res.render('admin/match-form', { title: 'Create Match', active: 'create', edit: null, form: defaultForm(), errors: [], modes: MODES, maps: MAPS });
+  res.render('admin/match-form', {
+    title: 'Create Match', active: 'create', edit: null,
+    form: defaultForm(), errors: [], modes: MODES, maps: MAPS,
+    isTournamentForm: false,
+  });
 });
 
 router.post('/matches/create', requireRole(STAFF), wrap(async (req, res) => {
-  const { data, errors, roomId, roomPassword } = readMatchForm(req.body);
+  const { data, errors, roomId, roomPassword, tournamentData } = readMatchForm(req.body);
+
   if (errors.length) {
-    return res.status(400).render('admin/match-form', { title: 'Create Match', active: 'create', edit: null, form: req.body, errors, modes: MODES, maps: MAPS });
+    return res.status(400).render('admin/match-form', {
+      title: 'Create Match', active: 'create', edit: null,
+      form: req.body, errors, modes: MODES, maps: MAPS,
+      isTournamentForm: !!tournamentData?.isTournament,
+    });
   }
+
   const match = new Match({ ...data, createdBy: req.user._id });
   match.roomId = roomId;
   match.roomPassword = roomPassword;
   await match.save();
+
+  // If BR Squad Tournament — create Tournament entry
+  if (tournamentData?.isTournament) {
+    const Tournament = require('../models/Tournament');
+    const tournament = await Tournament.create({
+      name: tournamentData.name,
+      description: tournamentData.description,
+      mapName: data.mapName,
+      format: 'BR_SQUAD',
+      teamSize: tournamentData.teamSize,
+      maxTeams: tournamentData.maxTeams,
+      totalMatches: tournamentData.totalMatches,
+      entryFeePaise: data.entryFeePaise,
+      grandPrizePaise: tournamentData.grandPrizePaise,
+      registrationStartAt: data.registrationStartAt,
+      registrationCloseAt: data.registrationCloseAt,
+      tournamentStartAt: data.matchStartAt,
+      status: 'OPEN',
+      host: req.user._id,
+    });
+
+    await audit(req, 'TOURNAMENT_CREATE', tournament.publicCode, tournament.name);
+    return back(res, '/admin/matches', 'success', `Tournament ${tournament.publicCode} created.`);
+  }
+
   await audit(req, 'MATCH_CREATE', match.publicMatchCode, match.modeName);
   back(res, '/admin/matches', 'success', `Match ${match.publicMatchCode} created.`);
 }));
@@ -177,7 +268,10 @@ router.get('/matches/:id/edit', requireRole(STAFF), wrap(async (req, res, next) 
     room_release_at: toInput(m.roomReleaseAt), match_start_at: toInput(m.matchStartAt),
     room_id: m.roomId, room_password: m.roomPassword, rules_text: m.rulesText,
   };
-  res.render('admin/match-form', { title: `Edit ${m.publicMatchCode}`, active: 'matches', edit: m, form, errors: [], modes: MODES, maps: MAPS });
+  res.render('admin/match-form', {
+    title: `Edit ${m.publicMatchCode}`, active: 'matches', edit: m, form, errors: [], modes: MODES, maps: MAPS,
+    isTournamentForm: m.matchFormat === 'BR_SQUAD',
+  });
 }));
 
 router.post('/matches/:id/edit', requireRole(STAFF), wrap(async (req, res, next) => {
@@ -217,16 +311,53 @@ router.get('/results', requireRole(STAFF), wrap(async (req, res) => {
   const all = await Match.find({ status: { $in: ['ACTIVE', 'RESULT_SUBMITTED', 'COMPLETED'] } }).sort({ matchStartAt: -1 }).limit(100);
   const pending = all.filter((m) => m.status === 'RESULT_SUBMITTED' || (m.status === 'ACTIVE' && m.displayStatus() === 'IN_PROGRESS'));
   const completed = all.filter((m) => m.status === 'COMPLETED').slice(0, 10);
+
   let selected = null;
+  let teams = null;
+
   if (req.query.match && idOk(req.query.match)) {
     selected = await Match.findById(req.query.match).populate('registrations.user', 'profile email');
+
+    // ✅ BR Squad: build team-wise data
+    if (selected && selected.matchFormat === 'BR_SQUAD') {
+      const teamMap = {};
+      selected.registrations.forEach((r) => {
+        if (!r.teamSlot) return;
+        if (!teamMap[r.teamSlot]) {
+          teamMap[r.teamSlot] = {
+            slot: r.teamSlot,
+            teamName: r.teamName,
+            teamId: r.teamId,
+            igl: null,
+            players: [],
+          };
+        }
+        teamMap[r.teamSlot].players.push({
+          user: r.user,
+          isIGL: r.isIGL,
+        });
+        if (r.isIGL) {
+          teamMap[r.teamSlot].igl = r.user;
+        }
+      });
+      teams = Object.values(teamMap).sort((a, b) => a.slot - b.slot);
+    }
   }
-  res.render('admin/results', { title: 'Result Verification', active: 'results', pending, completed, selected, canApprove: OWNERS.includes(req.user.role) });
+
+  res.render('admin/results', {
+    title: 'Result Verification',
+    active: 'results',
+    pending,
+    completed,
+    selected,
+    teams,
+    canApprove: OWNERS.includes(req.user.role),
+  });
 }));
 
 router.post('/results/:id/submit', requireRole(STAFF), wrap(async (req, res, next) => {
   if (!idOk(req.params.id)) return next();
-  const m = await Match.findById(req.params.id);
+  const m = await Match.findById(req.params.id).populate('registrations.user', 'profile email');
   if (!m) return next();
   const url = `/admin/results?match=${m._id}`;
   if (!['ACTIVE', 'RESULT_SUBMITTED'].includes(m.status)) return back(res, url, 'error', 'Results cannot be changed for this match.');
@@ -234,8 +365,74 @@ router.post('/results/:id/submit', requireRole(STAFF), wrap(async (req, res, nex
   if (!m.registrations.length) return back(res, url, 'error', 'No players registered in this match.');
 
   const toArr = (v) => (Array.isArray(v) ? v : v === undefined ? [] : [v]);
+
+  // ============================================================
+  // BR SQUAD TOURNAMENT — team-wise results
+  // ============================================================
+  if (m.matchFormat === 'BR_SQUAD') {
+    const teamSlots = toArr(req.body.team_slot);
+    const placements = toArr(req.body.placement);
+    const kills = toArr(req.body.kills);
+    const amounts = toArr(req.body.amount);
+
+    if (!teamSlots.length) return back(res, url, 'error', 'No teams submitted.');
+
+    const totalAmount = amounts.reduce((s, a) => s + (parseInt(a, 10) || 0) * 100, 0);
+    if (totalAmount > m.prizePoolPaise) {
+      return back(res, url, 'error', `Total prize (${paise(totalAmount)}) exceeds grand prize pool (${paise(m.prizePoolPaise)}).`);
+    }
+
+    // Find IGL for each team slot
+    const iglBySlot = {};
+    m.registrations.forEach((r) => {
+      if (r.isIGL && r.teamSlot) iglBySlot[r.teamSlot] = r.user;
+    });
+
+    const results = [];
+    const teamPlacements = {};
+
+    for (let i = 0; i < teamSlots.length; i++) {
+      const slot = parseInt(teamSlots[i], 10);
+      const p = parseInt(placements[i], 10);
+      const k = parseInt(kills[i] || '0', 10);
+      const amt = parseInt(amounts[i], 10) || 0;
+
+      if (!slot || !(p >= 1) || !(k >= 0) || amt < 0) {
+        return back(res, url, 'error', 'Every team needs a valid placement, kills, and amount.');
+      }
+
+      const igl = iglBySlot[slot];
+      if (!igl) return back(res, url, 'error', `No IGL found for slot #${slot}.`);
+
+      // Store result ONLY on IGL (prize goes to IGL)
+      results.push({
+        user: igl._id,
+        placement: p,
+        kills: k,
+        prizePaise: amt * 100,
+        teamSlot: slot,
+        teamName: m.registrations.find((r) => r.teamSlot === slot)?.teamName || '',
+      });
+
+      teamPlacements[slot] = p;
+    }
+
+    // Store on match
+    m.results = results;
+    m.resultNotes = String(req.body.notes || '').slice(0, 500);
+    m.teamPlacements = teamPlacements; // for display
+    m.status = 'RESULT_SUBMITTED';
+    await m.save();
+
+    await audit(req, 'RESULT_SUBMIT', m.publicMatchCode, `${results.length} teams`);
+    return back(res, url, 'success', 'Team results submitted for verification.');
+  }
+
+  // ============================================================
+  // REGULAR MATCH — player-wise results (existing logic)
+  // ============================================================
   const uids = toArr(req.body.user), places = toArr(req.body.placement), kills = toArr(req.body.kills);
-  const valid = new Set(m.registrations.map((r) => String(r.user)));
+  const valid = new Set(m.registrations.map((r) => String(r.user._id || r.user)));
   const results = [];
   for (let i = 0; i < uids.length; i++) {
     const p = parseInt(places[i], 10), k = parseInt(kills[i] || '0', 10);
@@ -252,15 +449,19 @@ router.post('/results/:id/submit', requireRole(STAFF), wrap(async (req, res, nex
   await audit(req, 'RESULT_SUBMIT', m.publicMatchCode);
   back(res, url, 'success', 'Result submitted for verification.');
 }));
-
 router.post('/results/:id/approve', requireRole(OWNERS), wrap(async (req, res, next) => {
   if (!idOk(req.params.id)) return next();
   // Atomic status flip prevents double payouts on double-click.
-  const m = await Match.findOneAndUpdate({ _id: req.params.id, status: 'RESULT_SUBMITTED' }, { $set: { status: 'COMPLETED' } }, { new: true });
+  const m = await Match.findOneAndUpdate(
+    { _id: req.params.id, status: 'RESULT_SUBMITTED' },
+    { $set: { status: 'COMPLETED' } },
+    { new: true }
+  );
   if (!m) return back(res, '/admin/results', 'error', 'Nothing to approve (already settled or not submitted).');
+
   await settleMatch(m);
   await audit(req, 'RESULT_APPROVE', m.publicMatchCode, `Prize pool ${paise(m.prizePoolPaise)}`);
-  back(res, '/admin/results', 'success', `Match ${m.publicMatchCode} settled. Prizes credited to winners.`);
+  back(res, '/admin/results', 'success', `Match ${m.publicMatchCode} settled. Prizes credited.`);
 }));
 
 router.post('/results/:id/reject', requireRole(OWNERS), wrap(async (req, res, next) => {

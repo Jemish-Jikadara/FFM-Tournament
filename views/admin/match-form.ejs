@@ -66,12 +66,24 @@
         required value="<%= f.prize_pool %>" class="input">
     </div>
 
-    <div>
+    <!-- PLAYER-BASED MODE: MAX PLAYERS -->
+    <div id="max-players-wrap" class="<%= isTournamentForm ? 'hidden' : '' %>">
       <label class="label" for="max_players">
         <%- icon('users', 'inline h-3.5 w-3.5 -mt-0.5') %> Max Players
       </label>
       <input id="max_players" name="max_players" type="number" min="2" max="100"
-        required value="<%= f.max_players %>" class="input">
+        value="<%= f.max_players %>" class="input">
+    </div>
+
+    <!-- TOURNAMENT MODE: MAX TEAMS -->
+    <div id="max-teams-wrap" class="<%= isTournamentForm ? '' : 'hidden' %>">
+      <label class="label" for="max_teams">
+        <%- icon('users', 'inline h-3.5 w-3.5 -mt-0.5') %> Max Teams
+      </label>
+      <input id="max_teams" name="max_teams" type="number" min="2" max="24"
+        value="<%= f.max_teams || 12 %>" class="input">
+      <p class="text-[10px] text-[#8a7d63] mt-1">Number of squad slots
+        (2-24).</p>
     </div>
   </div>
 
@@ -86,26 +98,72 @@
         <label class="label" for="registration_start_at">Registration
           Opens</label>
         <input id="registration_start_at" name="registration_start_at"
-          type="datetime-local" required value="<%= f.registration_start_at %>"
-          class="input">
+          type="datetime-local" required
+          value="<%= f.registration_start_at %>" class="input">
       </div>
       <div>
         <label class="label" for="registration_close_at">Registration
           Closes</label>
         <input id="registration_close_at" name="registration_close_at"
-          type="datetime-local" required value="<%= f.registration_close_at %>"
-          class="input">
+          type="datetime-local" required
+          value="<%= f.registration_close_at %>" class="input">
       </div>
       <div>
         <label class="label" for="room_release_at">Room Release</label>
         <input id="room_release_at" name="room_release_at" type="datetime-local"
-          required value="<%= f.room_release_at %>" class="input">
+          required
+          value="<%= f.room_release_at %>" class="input">
       </div>
       <div>
         <label class="label" for="match_start_at">Match Start</label>
         <input id="match_start_at" name="match_start_at" type="datetime-local"
-          required value="<%= f.match_start_at %>" class="input">
+          required
+          value="<%= f.match_start_at %>" class="input">
       </div>
+    </div>
+  </div>
+
+  <!-- TOURNAMENT EXTRA FIELDS -->
+  <div id="tournament-extra"
+    class="<%= isTournamentForm ? '' : 'hidden' %> space-y-4">
+    <h2
+      class="text-xs font-extrabold uppercase tracking-wider text-amber-400 mb-3 flex items-center gap-1.5">
+      <%- icon('trophy', 'h-4 w-4') %> Tournament Details
+    </h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="label" for="tournament_name">Tournament Name</label>
+        <input id="tournament_name" name="tournament_name" type="text"
+          maxlength="80"
+          value="<%= f.tournament_name || '' %>"
+          placeholder="FFM BR Squad Championship #1" class="input">
+      </div>
+
+      <div>
+        <label class="label" for="total_matches">Total Matches</label>
+        <input id="total_matches" name="total_matches" type="number" min="1"
+          max="20"
+          value="<%= f.total_matches || 6 %>" class="input">
+        <p class="text-[10px] text-[#8a7d63] mt-1">Number of matches per
+          tournament (1-20).</p>
+      </div>
+
+      <div>
+        <label class="label" for="team_size">Team Size</label>
+        <input id="team_size" name="team_size" type="number" min="2" max="6"
+          value="<%= f.team_size || 4 %>" class="input">
+        <p class="text-[10px] text-[#8a7d63] mt-1">Players per squad (2-6).</p>
+      </div>
+    </div>
+
+    <div>
+      <label class="label" for="tournament_description">Tournament Description
+        (optional)</label>
+      <textarea id="tournament_description" name="tournament_description"
+        rows="2" maxlength="500"
+        placeholder="Rules, format, and prize details..."
+        class="input"><%= f.tournament_description || '' %></textarea>
     </div>
   </div>
 
@@ -150,4 +208,8 @@
     </a>
   </div>
 </form>
+
+<!-- TOURNAMENT MODE TOGGLE SCRIPT -->
+<script src="/js/match-form.js" defer></script>
+
 <%- include('../partials/admin-close') %>

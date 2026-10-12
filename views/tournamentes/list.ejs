@@ -1,0 +1,107 @@
+<div class="py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-6">
+
+    <!-- HEADER -->
+    <div
+        class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <div
+                class="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400 mb-2">Tournaments</div>
+            <h1 class="h1">BR Squad Arena</h1>
+            <p class="text-xs text-[#8a7d63] mt-1">Multi-match tournaments · 12
+                squads · Real prizes</p>
+        </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="flex flex-wrap gap-2">
+        <% [['ACTIVE', 'Active'], ['ALL', 'All']].forEach(function(t) { %>
+        <a href="/tournaments?status=<%= t[0] %>"
+            class="rounded-lg px-4 py-2 text-xs font-bold transition
+        <%= filter === t[0]
+            ? 'bg-gradient-to-b from-amber-300 to-amber-500 text-black border border-amber-400 shadow-[0_0_20px_-5px_rgba(245,200,66,0.7)]'
+            : 'bg-black/60 border border-white/10 text-[#e8dfc9] hover:border-amber-500/40 hover:text-amber-300' %>">
+            <%= t[1] %>
+        </a>
+        <% }) %>
+    </div>
+
+    <!-- LIST -->
+    <% if (!tournaments.length) { %>
+    <div
+        class="rounded-2xl border border-amber-500/20 bg-black/60 backdrop-blur-sm p-12 text-center">
+        <%- icon('trophy', 'mx-auto h-12 w-12 text-amber-500/40 mb-3') %>
+        <h3 class="font-bold text-lg text-white">No Tournaments Yet</h3>
+        <p class="text-xs text-[#8a7d63] mt-1">Tournaments will appear here when
+            hosts create them.</p>
+    </div>
+    <% } else { %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <% tournaments.forEach(function(t) { %>
+        <a href="/tournaments/<%= t._id %>"
+            class="group block rounded-xl border border-amber-500/20 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-5 transition hover:border-amber-500/50 hover:shadow-[0_0_40px_-15px_rgba(245,200,66,0.4)]">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-3">
+                <span
+                    class="rounded-md bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300">
+                    <%= t.format.replace('_', ' ') %>
+                </span>
+                <span class="text-[10px] font-mono font-bold text-[#8a7d63]"><%=
+                    t.publicCode %></span>
+            </div>
+
+            <!-- Name -->
+            <h3
+                class="text-lg font-black text-white uppercase tracking-tight mb-1 group-hover:text-amber-300 transition"><%=
+                t.name %></h3>
+            <div
+                class="flex items-center gap-2 text-[11px] text-[#8a7d63] mb-4">
+                <%- icon('map-pin', 'h-3 w-3') %>
+                <span><%= t.mapName %></span>
+                <span class="text-amber-500/40">•</span>
+                <span><%= t.totalMatches %> matches</span>
+            </div>
+
+            <!-- Stats -->
+            <div
+                class="grid grid-cols-3 gap-2 rounded-lg border border-amber-500/15 bg-black/60 p-3 mb-4">
+                <div>
+                    <div
+                        class="text-[9px] font-bold uppercase tracking-wider text-[#8a7d63] mb-0.5">Entry</div>
+                    <div class="text-sm font-black text-white"><%=
+                        t.entryFeePaise === 0 ? 'FREE' : paise(t.entryFeePaise)
+                        %></div>
+                </div>
+                <div>
+                    <div
+                        class="text-[9px] font-bold uppercase tracking-wider text-[#8a7d63] mb-0.5">Prize</div>
+                    <div
+                        class="text-sm font-black bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent"><%=
+                        paise(t.grandPrizePaise) %></div>
+                </div>
+                <div>
+                    <div
+                        class="text-[9px] font-bold uppercase tracking-wider text-[#8a7d63] mb-0.5">Teams</div>
+                    <div class="text-sm font-black text-white font-mono"><%=
+                        t.registeredTeams %>/<%= t.maxTeams %></div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between">
+                <span
+                    class="rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider <%= statusPill(t.displayStatus()) %>">
+                    <%= statusLabel(t.displayStatus()) %>
+                </span>
+                <span
+                    class="text-xs font-bold text-amber-400 group-hover:text-amber-300 transition">
+                    View Details →
+                </span>
+            </div>
+
+        </a>
+        <% }) %>
+    </div>
+    <% } %>
+
+</div>

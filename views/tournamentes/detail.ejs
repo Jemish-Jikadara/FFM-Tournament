@@ -1,0 +1,198 @@
+<%
+const st = tournament.displayStatus();
+const isDone = ['COMPLETED', 'CANCELLED'].includes(tournament.status);
+%>
+<div class="py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-6">
+
+    <a href="/tournaments"
+        class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8a7d63] hover:text-amber-400 transition">
+        <%- icon('arrow-left', 'h-4 w-4') %> Back to Tournaments
+    </a>
+
+    <!-- MAIN CARD -->
+    <div
+        class="rounded-2xl border border-amber-500/20 bg-[#0f0c08]/80 p-6 sm:p-8 backdrop-blur-md">
+
+        <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                    <span
+                        class="rounded-md bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-300"><%=
+                        tournament.format.replace('_', ' ') %></span>
+                    <span
+                        class="rounded-md bg-white/5 px-2.5 py-1 text-xs font-mono font-bold text-[#a89878]"><%=
+                        tournament.publicCode %></span>
+                    <span
+                        class="rounded-full px-3 py-0.5 text-xs font-bold uppercase tracking-wider <%= statusPill(st) %>"><%=
+                        statusLabel(st) %></span>
+                </div>
+                <h1
+                    class="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight"><%=
+                    tournament.name %></h1>
+                <p class="text-xs text-[#8a7d63] mt-1 flex items-center gap-2">
+                    <%- icon('map-pin', 'h-3.5 w-3.5') %>
+                    <%= tournament.mapName %> · <%= tournament.totalMatches %>
+                    Matches · <%= tournament.teamSize %>v<%= tournament.teamSize
+                    %>
+                </p>
+            </div>
+            <div
+                class="sm:text-right sm:border-l sm:border-amber-500/20 sm:pl-6">
+                <span
+                    class="text-xs text-[#8a7d63] font-semibold block uppercase tracking-wider">Grand
+                    Prize</span>
+                <span
+                    class="text-3xl font-black bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent"><%=
+                    paise(tournament.grandPrizePaise) %></span>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div
+            class="grid grid-cols-2 sm:grid-cols-4 gap-3 border-y border-amber-500/15 py-4 my-6">
+            <div>
+                <span
+                    class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] block">Entry
+                    Fee</span>
+                <span class="text-lg font-black text-white"><%=
+                    tournament.entryFeePaise === 0 ? 'FREE' :
+                    paise(tournament.entryFeePaise) %></span>
+            </div>
+            <div>
+                <span
+                    class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] block">Confirmed
+                    Slots</span>
+                <span class="text-lg font-black text-white font-mono"><%=
+                    tournament.registeredTeams %> / <%= tournament.maxTeams
+                    %></span>
+            </div>
+            <div>
+                <span
+                    class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] block">Team
+                    Size</span>
+                <span class="text-lg font-black text-white"><%=
+                    tournament.teamSize %> players</span>
+            </div>
+            <div>
+                <span
+                    class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] block">Starts</span>
+                <span class="text-xs font-bold text-[#e8dfc9] block mt-1"><%=
+                    tournament.tournamentStartAt ?
+                    date(tournament.tournamentStartAt) : 'TBA' %></span>
+            </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+            <div>
+                <% if (tournament.registrationCloseAt && !isDone) { %>
+                <div
+                    class="flex items-center gap-1.5 font-mono text-xs text-[#a89878]">
+                    <%- icon('clock', 'h-3.5 w-3.5 text-amber-400') %>
+                    <span class="text-[#8a7d63]">Registration closes:</span>
+                    <span class="font-bold text-amber-400"><%=
+                        date(tournament.registrationCloseAt) %></span>
+                </div>
+                <% } %>
+            </div>
+
+            <div>
+                <% if (myRegistration) { %>
+                <div
+                    class="flex items-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-5 py-3 text-xs font-bold text-amber-400">
+                    <%- icon('circle-check-big', 'h-4 w-4') %>
+                    Your team is registered! (Slot #<%= myRegistration.slot %>)
+                </div>
+                <% } else if (isDone) { %>
+                <span class="text-xs font-semibold text-[#8a7d63]">Tournament
+                    has ended.</span>
+                <% } else if (!tournament.canJoin()) { %>
+                <button disabled
+                    class="rounded-xl bg-white/5 border border-white/10 px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#8a7d63] cursor-not-allowed">
+                    <%= tournament.isFull() ? 'Tournament Full' :
+                    'Registration Closed' %>
+                </button>
+                <% } else if (!user) { %>
+                <a href="/login?next=/tournaments/<%= tournament._id %>"
+                    class="inline-block rounded-xl bg-gradient-to-b from-amber-300 to-amber-500 px-8 py-3.5 text-xs font-black uppercase tracking-wider text-black shadow-[0_0_30px_-5px_rgba(245,200,66,0.7)] hover:from-amber-200 hover:to-amber-400 transition">
+                    Sign in to Join
+                </a>
+                <% } else if (!user.isIGL()) { %>
+                <span class="text-xs font-semibold text-[#8a7d63]">Only IGL
+                    accounts can join BR Squad tournaments.</span>
+                <% } else if (!myTeam) { %>
+                <a href="/team/create"
+                    class="inline-block rounded-xl bg-gradient-to-b from-amber-300 to-amber-500 px-6 py-3 text-xs font-black uppercase tracking-wider text-black shadow-[0_0_30px_-5px_rgba(245,200,66,0.7)] hover:from-amber-200 hover:to-amber-400 transition">
+                    Create Team First
+                </a>
+                <% } else { %>
+                <a href="/tournaments/<%= tournament._id %>/join"
+                    class="inline-block rounded-xl bg-gradient-to-b from-amber-300 to-amber-500 px-8 py-3.5 text-xs font-black uppercase tracking-wider text-black shadow-[0_0_30px_-5px_rgba(245,200,66,0.7)] hover:from-amber-200 hover:to-amber-400 transition">
+                    Join Tournament (<%= paise(tournament.entryFeePaise) %>)
+                </a>
+                <% } %>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- REGISTERED TEAMS -->
+    <div
+        class="rounded-2xl border border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm overflow-hidden">
+        <div
+            class="p-5 border-b border-amber-500/20 flex items-center justify-between">
+            <h2 class="h2">Registered Teams</h2>
+            <span
+                class="rounded-full bg-amber-500/10 border border-amber-500/25 px-3 py-1 text-xs font-mono font-bold text-amber-400">
+                <%= teams.length %> / <%= tournament.maxTeams %>
+            </span>
+        </div>
+
+        <% if (!teams.length) { %>
+        <div class="p-12 text-center text-xs text-[#8a7d63]">No teams registered
+            yet. Be the first!</div>
+        <% } else { %>
+        <div class="divide-y divide-amber-500/10">
+            <% teams.forEach(function(t) { %>
+            <div
+                class="flex items-center justify-between p-4 hover:bg-amber-500/[0.03] transition">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-300 to-amber-600 text-black font-black text-sm">
+                        <%= t.slot %>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span
+                                class="font-black text-white text-sm uppercase tracking-tight"><%=
+                                t.teamName %></span>
+                            <% if (t.teamTag) { %>
+                            <span
+                                class="text-[10px] font-mono text-amber-400">[<%=
+                                t.teamTag %>]</span>
+                            <% } %>
+                        </div>
+                        <div class="text-[11px] text-[#8a7d63]">
+                            IGL: <strong class="text-[#e8dfc9]"><%=
+                                t.igl.profile && t.igl.profile.displayName ||
+                                t.igl.email %></strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div
+                        class="text-[10px] uppercase tracking-wider text-[#8a7d63] font-bold">Players</div>
+                    <div class="text-sm font-black text-white font-mono"><%=
+                        t.selectedPlayers.length %> / <%= tournament.teamSize
+                        %></div>
+                </div>
+            </div>
+            <% }) %>
+        </div>
+        <% } %>
+    </div>
+
+</div>

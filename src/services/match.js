@@ -74,7 +74,59 @@ async function cancelMatch(match, reason) {
 }
 
 /** Pay winners and update player stats. Caller must already have flipped the match to COMPLETED (atomic guard). */
+/** Pay winners and update player stats. Caller must already have flipped the match to COMPLETED (atomic guard). */
 async function settleMatch(match) {
+  // ============================================================
+  // BR SQUAD TOURNAMENT — prize goes to IGL only
+  // ============================================================
+  if (match.matchFormat === 'BR_SQUAD') {
+    for (const r of match.results) {
+      const prize = r.prizePaise || 0;
+      const u = await User.findById(r.user);
+      if (!u) continue;
+
+      // IGL stats: 1 match played. If placement 1 → win
+      u.profile.totalMatches += 1;
+      if (r.placement === 1) {
+        u.profile.totalWins += 1;
+        u.profile.currentStreak += 1;
+      } else {
+        u.profile.totalLosses += 1;
+        u.profile.currentStreak = 0;
+      }
+      if (prize > 0) {
+        u.profile.totalWinningsPaise += prize;
+      }
+      await u.save();
+
+      // Credit prize to IGL winning balance
+      if (prize > 0) {
+        await walletSvc.credit(r.user, prize, {
+          bucket: 'winning',
+          type: 'PRIZE',
+          description: `Tournament Prize - ${match.modeName} (${match.publicMatchCode})`,
+          referenceType: 'MATCH',
+          referenceId: match._id,
+          idempotencyKey: `PRIZE:${match._id}:${r.user}`,
+        });
+        await notify(r.user, 'You won a prize!',
+          `${paise(prize)} was credited to your winning balance.`,
+          '/wallet');
+      } else {
+        await notify(r.user, 'Result published',
+          `Results for ${match.publicMatchCode} are final.`,
+          `/matches/${match._id}`);
+      }
+    }
+
+    match.markModified('results');
+    await match.save();
+    return;
+  }
+
+  // ============================================================
+  // REGULAR MATCH — existing logic
+  // ============================================================
   const winners = match.results.filter((r) => r.placement === 1);
   const share = winners.length ? Math.floor(match.prizePoolPaise / winners.length) : 0;
 

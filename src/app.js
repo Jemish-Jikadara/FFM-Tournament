@@ -66,6 +66,7 @@ app.use('/', require('./routes/pages'));
 app.use('/', require('./routes/auth'));
 app.use('/matches', require('./routes/matches'));
 app.use('/admin', require('./routes/admin'));
+// app.use('/',require('./routes/tournament'))
 app.use('/', require('./routes/player'));
 app.use('/', require('./routes/team'));
 

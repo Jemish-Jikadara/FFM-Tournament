@@ -1,0 +1,162 @@
+<div class="py-8 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto space-y-6">
+
+    <a href="/tournaments/<%= tournament._id %>"
+        class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8a7d63] hover:text-amber-400 transition">
+        <%- icon('arrow-left', 'h-4 w-4') %> Back
+    </a>
+
+    <div>
+        <div
+            class="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400 mb-2">Join
+            Tournament</div>
+        <h1 class="h1"><%= tournament.name %></h1>
+        <p class="text-xs text-[#8a7d63] mt-1">Select <%= tournament.teamSize %>
+            players (including yourself) from your roster</p>
+    </div>
+
+    <% if (error) { %>
+    <div
+        class="flex items-center gap-2 rounded-lg bg-rose-500/10 border border-rose-500/30 p-3 text-xs font-semibold text-rose-400">
+        <%- icon('circle-alert', 'h-4 w-4 shrink-0') %>
+        <span><%= error %></span>
+    </div>
+    <% } %>
+
+    <form method="post" action="/tournaments/<%= tournament._id %>/join"
+        class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-6 space-y-5">
+
+        <!-- TEAM NAME -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="label" for="team_name">Team Display Name</label>
+                <input id="team_name" name="team_name" type="text" required
+                    minlength="3" maxlength="40"
+                    value="<%= team.name %>" class="input">
+                <p class="text-[10px] text-[#8a7d63] mt-1">Shown in tournament
+                    standings.</p>
+            </div>
+            <div>
+                <label class="label" for="team_tag">Team Tag (optional)</label>
+                <input id="team_tag" name="team_tag" type="text" maxlength="6"
+                    value="<%= team.tag || '' %>"
+                    class="input font-mono uppercase">
+            </div>
+        </div>
+
+        <!-- PLAYER SELECTION -->
+        <div>
+            <label class="label mb-2 block">
+                Select <%= tournament.teamSize %> Players (You + <%=
+                tournament.teamSize - 1 %>)
+            </label>
+            <p class="text-[11px] text-[#8a7d63] mb-3">IGL is auto-included.
+                Choose <%= tournament.teamSize - 1 %> more from your roster.</p>
+
+            <div class="space-y-2">
+                <% members.forEach(function(m) { const u = m.user; const isIGL =
+                m.role === 'IGL'; %>
+                <label
+                    class="flex items-center gap-3 rounded-lg border border-amber-500/15 bg-black/40 p-3 cursor-pointer hover:border-amber-500/40 transition <%= isIGL ? 'opacity-70' : '' %>">
+                    <input type="checkbox" name="selected_players"
+                        value="<%= u._id %>"
+                        <%=isIGL ? 'checked disabled' : '' %>
+                    data-igl="<%= isIGL ? 'true' : 'false' %>"
+                    class="player-cb h-4 w-4 rounded border-amber-500/40 bg-black/40 text-amber-500 focus:ring-amber-500/50">
+
+                    <!-- Hidden input for IGL to submit -->
+                    <% if (isIGL) { %>
+                    <input type="hidden" name="selected_players"
+                        value="<%= u._id %>">
+                    <% } %>
+
+                    <div
+                        class="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-amber-300 to-amber-600 text-black font-black text-xs">
+                        <%= (u.profile && u.profile.displayName ||
+                        u.email).charAt(0).toUpperCase() %>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-white text-sm"><%=
+                                u.profile && u.profile.displayName || u.email
+                                %></span>
+                            <% if (isIGL) { %>
+                            <span
+                                class="rounded px-1.5 py-0.5 text-[9px] font-black uppercase bg-amber-500/20 border border-amber-500/40 text-amber-300">IGL</span>
+                            <% } %>
+                        </div>
+                        <div class="text-[11px] text-[#8a7d63] font-mono">
+                            <%= u.profile && u.profile.freeFireName || 'No IGN'
+                            %>
+                            <% if (u.profile && u.profile.freeFireUid) { %> ·
+                            <%= u.profile.freeFireUid %><% } %>
+                        </div>
+                    </div>
+                    <span
+                        class="text-[10px] font-bold uppercase tracking-wider <%= u.uidStatus === 'VERIFIED' ? 'text-emerald-400' : 'text-amber-400' %>">
+                        <%= u.uidStatus %>
+                    </span>
+                </label>
+                <% }) %>
+            </div>
+            <p id="selection-count"
+                class="text-[11px] text-amber-400 font-bold mt-2"></p>
+        </div>
+
+        <!-- ENTRY FEE -->
+        <div class="rounded-lg border border-amber-500/20 bg-black/40 p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div
+                        class="text-[10px] font-black uppercase tracking-wider text-amber-400">Entry
+                        Fee</div>
+                    <div class="text-xs text-[#8a7d63] mt-1">Deducted from your
+                        IGL wallet</div>
+                </div>
+                <div class="text-2xl font-black text-white"><%=
+                    tournament.entryFeePaise === 0 ? 'FREE' :
+                    paise(tournament.entryFeePaise) %></div>
+            </div>
+        </div>
+
+        <button type="submit" id="submit-btn"
+            class="btn-primary w-full bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black border border-amber-400 shadow-[0_0_24px_-6px_rgba(245,200,66,0.7)] py-3">
+            <%- icon('check', 'h-4 w-4') %> Register Team
+        </button>
+    </form>
+
+</div>
+
+<script>
+  (function() {
+    const checkboxes = document.querySelectorAll('.player-cb:not([disabled])');
+    const counter = document.getElementById('selection-count');
+    const submitBtn = document.getElementById('submit-btn');
+    const REQUIRED = <%= tournament.teamSize - 1 %>;
+
+    function updateCount() {
+      const checked = document.querySelectorAll('.player-cb:not([disabled]):checked').length;
+      counter.textContent = checked + ' / ' + REQUIRED + ' selected';
+      if (checked === REQUIRED) {
+        counter.classList.remove('text-amber-400');
+        counter.classList.add('text-emerald-400');
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50');
+      } else {
+        counter.classList.remove('text-emerald-400');
+        counter.classList.add('text-amber-400');
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50');
+      }
+    }
+
+    checkboxes.forEach(cb => cb.addEventListener('change', function() {
+      const checked = document.querySelectorAll('.player-cb:not([disabled]):checked').length;
+      if (this.checked && checked > REQUIRED) {
+        this.checked = false;
+      }
+      updateCount();
+    }));
+
+    updateCount();
+  })();
+</script>

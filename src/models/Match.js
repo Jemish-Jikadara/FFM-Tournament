@@ -6,6 +6,11 @@ const registrationSchema = new Schema(
   {
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     joinedAt: { type: Date, default: Date.now },
+    // ✅ Tournament (BR Squad) fields
+    teamId: { type: Schema.Types.ObjectId, ref: 'Team', default: null },
+    teamName: { type: String, default: '' },
+    teamSlot: { type: Number, default: null },
+    isIGL: { type: Boolean, default: false },
   },
   { _id: false }
 );
@@ -111,5 +116,32 @@ matchSchema.methods.slotOf = function (userId) {
   const id = String(userId);
   return this.registrations.findIndex((r) => String(r.user?._id || r.user) === id) + 1;
 };
+// ✅ Teams count for BR Squad tournaments
+matchSchema.methods.currentTeams = function () {
+  if (this.matchFormat !== 'BR_SQUAD') return this.currentPlayers();
+  if (!this.registrations || !this.registrations.length) return 0;
+  const teams = new Set();
+  this.registrations.forEach((r) => {
+    if (r.teamSlot) teams.add(r.teamSlot);
+  });
+  return teams.size;
+};
 
+// ✅ Max teams (for BR Squad)
+matchSchema.methods.maxTeams = function () {
+  if (this.matchFormat !== 'BR_SQUAD') return this.maxPlayers;
+  return Math.ceil(this.maxPlayers / (this.teamSize || 4));
+};
+
+// ✅ Is user's team registered?
+matchSchema.methods.teamRegistered = function (teamId) {
+  if (!teamId || !this.registrations) return false;
+  return this.registrations.some((r) => String(r.teamId) === String(teamId));
+};
+
+// ✅ Get slot of a team
+matchSchema.methods.slotOfTeam = function (teamId) {
+  const reg = this.registrations.find((r) => String(r.teamId) === String(teamId));
+  return reg ? reg.teamSlot : null;
+};
 module.exports = mongoose.model('Match', matchSchema);

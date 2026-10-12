@@ -74,13 +74,15 @@ const isActive = (h) => path === h || (h !== '/' && path.startsWith(h + '/'));
       </a>
 
       <!-- Profile -->
-     <a href="/profile" class="hidden sm:flex items-center gap-2 rounded border border-white/10 bg-[#141416] px-3 py-1.5 text-sm font-semibold text-white hover:border-amber-500/40 transition">
-  <%- icon('user', 'h-3.5 w-3.5 text-amber-400') %>
-  <span class="truncate max-w-[100px]"><%= user.shownName() %></span>
-  <% if (user.role === 'IGL') { %>
-    <span class="rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider bg-amber-500/20 border border-amber-500/40 text-amber-300">IGL</span>
-  <% } %>
-</a>
+      <a href="/profile"
+        class="hidden sm:flex items-center gap-2 rounded border border-white/10 bg-[#141416] px-3 py-1.5 text-sm font-semibold text-white hover:border-amber-500/40 transition">
+        <%- icon('user', 'h-3.5 w-3.5 text-amber-400') %>
+        <span class="truncate max-w-[100px]"><%= user.shownName() %></span>
+        <% if (user.role === 'IGL') { %>
+        <span
+          class="rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider bg-amber-500/20 border border-amber-500/40 text-amber-300">IGL</span>
+        <% } %>
+      </a>
 
       <!-- Logout -->
       <form method="post" action="/logout">
