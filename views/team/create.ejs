@@ -1,0 +1,55 @@
+<div class="py-8 px-4 sm:px-6 lg:px-8 max-w-2xl mx-auto space-y-6">
+
+  <!-- HEADER -->
+  <div class="flex items-center justify-between gap-4">
+    <div>
+      <div class="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400 mb-2">Create Team</div>
+      <h1 class="h1">Build Your Squad</h1>
+      <p class="text-xs text-[#8a7d63] mt-1">Create your team and share the invite link with players</p>
+    </div>
+    <a href="/team/manage" class="btn-ghost border-amber-500/30 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400">
+      <%- icon('arrow-left', 'h-4 w-4') %> Back
+    </a>
+  </div>
+
+  <!-- ERROR -->
+  <% if (error) { %>
+    <div class="flex items-center gap-2 rounded-lg bg-rose-500/10 border border-rose-500/30 p-3 text-xs font-semibold text-rose-400">
+      <%- icon('circle-alert', 'h-4 w-4 shrink-0') %>
+      <span><%= error %></span>
+    </div>
+  <% } %>
+
+  <!-- FORM -->
+  <form method="post" action="/team/create" class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-6 space-y-5">
+
+    <div>
+      <label class="label" for="name">Team Name</label>
+      <input id="name" name="name" type="text" required minlength="3" maxlength="30"
+        value="<%= form.name || '' %>" placeholder="e.g. Viper Squad"
+        class="input">
+      <p class="text-[10px] text-[#8a7d63] mt-1">3-30 characters. Must be unique.</p>
+    </div>
+
+    <div>
+      <label class="label" for="tag">Team Tag (optional)</label>
+      <input id="tag" name="tag" type="text" maxlength="6"
+        value="<%= form.tag || '' %>" placeholder="e.g. VPR"
+        class="input font-mono uppercase">
+      <p class="text-[10px] text-[#8a7d63] mt-1">2-6 characters. Shown on your scorecard.</p>
+    </div>
+
+    <div>
+      <label class="label" for="description">Description (optional)</label>
+      <textarea id="description" name="description" rows="3" maxlength="200"
+        placeholder="Tell players about your team..."
+        class="input"><%= form.description || '' %></textarea>
+    </div>
+
+    <button type="submit"
+      class="btn-primary w-full bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black border border-amber-400 shadow-[0_0_24px_-6px_rgba(245,200,66,0.7)]">
+      <%- icon('shield', 'h-4 w-4') %> Create Team
+    </button>
+  </form>
+
+</div>

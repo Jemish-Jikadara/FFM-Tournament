@@ -1,0 +1,120 @@
+<div class="py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-6">
+
+  <!-- HEADER -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <div class="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400 mb-2">Team Dashboard</div>
+      <h1 class="h1"><%= team.name %> <span class="text-amber-400 text-lg"><%= team.tag ? '[' + team.tag + ']' : '' %></span></h1>
+      <% if (team.description) { %>
+        <p class="text-xs text-[#8a7d63] mt-1"><%= team.description %></p>
+      <% } %>
+    </div>
+    <div class="flex gap-2">
+      <a href="/dashboard" class="btn-ghost border-amber-500/30 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400">
+        <%- icon('home', 'h-4 w-4') %> Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div class="rounded-xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-4">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] mb-1">Members</div>
+      <div class="text-2xl font-black text-amber-400 tabular-nums"><%= team.memberCount %></div>
+    </div>
+    <div class="rounded-xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-4">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] mb-1">Invite Code</div>
+      <div class="text-sm font-black text-white font-mono"><%= team.inviteCode %></div>
+    </div>
+    <div class="rounded-xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-4">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] mb-1">Status</div>
+      <div class="text-sm font-black text-emerald-400 uppercase"><%= team.status %></div>
+    </div>
+    <div class="rounded-xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-4">
+      <div class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] mb-1">Created</div>
+      <div class="text-sm font-black text-white"><%= date(team.createdAt) %></div>
+    </div>
+  </div>
+
+  <!-- INVITE LINK -->
+  <div class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-6 space-y-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <div class="text-[10px] font-black uppercase tracking-[0.25em] text-amber-400 mb-1">Invite Link</div>
+        <h2 class="h2">Share with your players</h2>
+        <p class="text-xs text-[#8a7d63] mt-1">Anyone with this link can join your team</p>
+      </div>
+      <form method="post" action="/team/invite/regenerate" onsubmit="return confirm('Regenerate invite link? Old link will stop working.')">
+        <button type="submit" class="btn-ghost border-amber-500/30 text-amber-300 hover:bg-amber-500/10 hover:border-amber-400 text-xs">
+          <%- icon('refresh-cw', 'h-3.5 w-3.5') %> Regenerate
+        </button>
+      </form>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <input id="inviteUrl" type="text" readonly value="<%= inviteUrl %>"
+        class="input font-mono text-xs flex-1 !bg-black/40" onclick="this.select()">
+      <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('inviteUrl').value); this.textContent='Copied!'; setTimeout(()=>this.textContent='Copy', 1500)"
+        class="btn-primary !py-2 !px-4 bg-gradient-to-b from-amber-300 to-amber-500 text-black font-black border border-amber-400 shadow-[0_0_20px_-5px_rgba(245,200,66,0.7)] whitespace-nowrap">
+        Copy
+      </button>
+    </div>
+  </div>
+
+  <!-- MEMBERS LIST -->
+  <div class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm overflow-hidden">
+    <div class="p-5 border-b border-amber-500/20 flex items-center justify-between">
+      <h2 class="h2">Roster</h2>
+      <span class="rounded-full bg-amber-500/10 border border-amber-500/25 px-3 py-1 text-xs font-mono font-bold text-amber-400">
+        <%= members.length %> Members
+      </span>
+    </div>
+
+    <% if (!members.length) { %>
+      <div class="p-10 text-center text-xs text-[#8a7d63]">No members yet.</div>
+    <% } else { %>
+      <div class="divide-y divide-amber-500/10">
+        <% members.forEach(function(m) { const u = m.user; %>
+          <div class="flex items-center justify-between p-4 hover:bg-amber-500/[0.03] transition">
+
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-300 to-amber-600 text-black font-black text-sm">
+                <%= (u.profile && u.profile.displayName || u.email).charAt(0).toUpperCase() %>
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-white text-sm">
+                    <%= u.profile && u.profile.displayName || u.email %>
+                  </span>
+                  <% if (m.role === 'IGL') { %>
+                    <span class="rounded px-1.5 py-0.5 text-[10px] font-black uppercase bg-amber-500/20 border border-amber-500/40 text-amber-300">IGL</span>
+                  <% } %>
+                </div>
+                <div class="text-[11px] text-[#8a7d63] font-mono">
+                  <%= u.profile && u.profile.freeFireName || 'No IGN' %>
+                  <% if (u.profile && u.profile.freeFireUid) { %> · <%= u.profile.freeFireUid %><% } %>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-bold uppercase tracking-wider
+                <%= u.uidStatus === 'VERIFIED' ? 'text-emerald-400' : u.uidStatus === 'REJECTED' ? 'text-rose-400' : 'text-amber-400' %>">
+                <%= u.uidStatus %>
+              </span>
+              <% if (m.role !== 'IGL') { %>
+                <form method="post" action="/team/member/<%= m._id %>/kick" onsubmit="return confirm('Remove this member?')">
+                  <button type="submit" class="text-xs font-bold text-rose-400 hover:text-rose-300 px-2 py-1 rounded hover:bg-rose-500/10 transition">
+                    Kick
+                  </button>
+                </form>
+              <% } %>
+            </div>
+
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+
+</div>

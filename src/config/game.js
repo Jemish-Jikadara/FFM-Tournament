@@ -11,9 +11,15 @@ const MODES = [
 const MAPS = ['Bermuda', 'Purgatory', 'Kalahari', 'Alpine', 'Nexterra', 'Iron Cage'];
 const FORMATS = ['1v1', '2v2', '4v4', 'SOLO'];
 
-const ROLES = ['PLAYER', 'MATCH_HOST', 'SUPPORT', 'ADMIN', 'SUPER_ADMIN'];
+const ROLES = ['PLAYER', 'IGL', 'MATCH_HOST', 'SUPPORT', 'ADMIN', 'SUPER_ADMIN'];
 const ADMIN_ROLES = ['ADMIN', 'SUPER_ADMIN', 'MATCH_HOST'];
 const USER_STATUSES = ['ACTIVE', 'SUSPENDED', 'BANNED'];
+
+// Registration-choosable roles (public)
+const PUBLIC_ROLES = [
+  { value: 'PLAYER', label: 'Player', desc: 'Join matches as a solo competitor' },
+  { value: 'IGL', label: 'IGL (In-Game Leader)', desc: 'Create your team, invite players, join BR Squad tournaments' },
+];
 
 const STATUS_FILTERS = [
   { label: 'All Statuses', value: 'ALL' },
@@ -28,4 +34,14 @@ const STATUS_FILTERS = [
 
 const modeBySlug = (slug) => MODES.find((m) => m.slug === slug);
 
-module.exports = { MODES, MAPS, FORMATS, ROLES, ADMIN_ROLES, USER_STATUSES, STATUS_FILTERS, modeBySlug };
+module.exports = {
+  MODES,
+  MAPS,
+  FORMATS,
+  ROLES,
+  ADMIN_ROLES,
+  USER_STATUSES,
+  PUBLIC_ROLES,
+  STATUS_FILTERS,
+  modeBySlug,
+};

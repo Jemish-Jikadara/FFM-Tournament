@@ -6,29 +6,254 @@ const uidClass = user.uidStatus === 'VERIFIED' ? 'text-emerald-400' :
 user.uidStatus === 'REJECTED' ? 'text-rose-400' : 'text-amber-400';
 %>
 <div class="page space-y-8">
+
+  <!-- WELCOME CARD -->
   <div
     class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl border border-amber-500/20 bg-[#0f0c08]/80 p-6 backdrop-blur-sm">
     <div>
-      <span
-        class="text-xs font-bold uppercase tracking-wider text-amber-400">COMPETITOR
-        DASHBOARD</span>
-      <h1 class="text-2xl font-black text-white mt-0.5">Welcome back, <%=
-        user.shownName() %></h1>
+      <span class="text-xs font-bold uppercase tracking-wider text-amber-400">
+        <%= user.isIGL() ? 'IGL DASHBOARD' : 'COMPETITOR DASHBOARD' %>
+      </span>
+      <h1 class="text-2xl font-black text-white mt-0.5 flex items-center gap-3">
+        Welcome back, <%= user.shownName() %>
+        <% if (user.isIGL()) { %>
+        <span
+          class="rounded px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-amber-500/20 border border-amber-500/40 text-amber-300">IGL</span>
+        <% } %>
+      </h1>
       <div
         class="flex flex-wrap items-center gap-3 mt-2 text-xs text-[#a89878]">
         <span class="font-mono"><strong class="text-[#e8dfc9]">UID:</strong> <%=
-          p.freeFireUid || 'Not linked' %></span><span
-          class="text-amber-500/40">•</span>
+          p.freeFireUid || 'Not linked' %></span>
+        <span class="text-amber-500/40">•</span>
         <span><strong class="text-[#e8dfc9]">IGN:</strong> <%= p.freeFireName ||
-          'N/A' %></span><span class="text-amber-500/40">•</span>
+          'N/A' %></span>
+        <span class="text-amber-500/40">•</span>
         <span class="font-semibold <%= uidClass %>"><%= user.uidStatus %></span>
       </div>
     </div>
     <a href="/matches"
-      class="flex items-center gap-2 rounded-xl bg-gradient-to-b from-amber-300 to-amber-500 px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-black shadow-[0_0_30px_-5px_rgba(245,200,66,0.7)] hover:from-amber-200 hover:to-amber-400 transition"><%-
-      icon('swords', 'h-4 w-4') %> Browse Matches</a>
+      class="flex items-center gap-2 rounded-xl bg-gradient-to-b from-amber-300 to-amber-500 px-4 py-2.5 text-xs font-extrabold uppercase tracking-wider text-black shadow-[0_0_30px_-5px_rgba(245,200,66,0.7)] hover:from-amber-200 hover:to-amber-400 transition">
+      <%- icon('swords', 'h-4 w-4') %> Browse Matches
+    </a>
   </div>
 
+  <!-- ============================================================
+       TEAM CARD — IGL & PLAYER (both)
+       ============================================================ -->
+  <% if (user.isIGL()) { %>
+  <!-- IGL VIEW -->
+  <section>
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="h2">My Team</h2>
+      <% if (myTeam) { %>
+      <a href="/team/manage"
+        class="text-xs font-bold text-amber-400 hover:text-amber-300 uppercase tracking-wider transition">
+        Manage Team →
+      </a>
+      <% } %>
+    </div>
+
+    <% if (!myTeam) { %>
+    <!-- No team yet -->
+    <div
+      class="rounded-xl border border-amber-500/20 bg-black/60 backdrop-blur-sm p-8 text-center">
+      <div
+        class="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 mb-4">
+        <%- icon('users', 'h-6 w-6 text-amber-400') %>
+      </div>
+      <h3 class="font-black text-white text-lg uppercase tracking-tight mb-2">No
+        Team Yet</h3>
+      <p class="text-xs text-[#a89878] mb-5 max-w-sm mx-auto">Create your team,
+        invite players, and get ready for BR Squad tournaments.</p>
+      <a href="/team/create"
+        class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-b from-amber-300 to-amber-500 px-6 py-3 text-xs font-black uppercase tracking-wider text-black shadow-[0_0_30px_-5px_rgba(245,200,66,0.7)] hover:from-amber-200 hover:to-amber-400 transition">
+        <%- icon('plus', 'h-4 w-4') %> Create Team
+      </a>
+    </div>
+    <% } else { %>
+    <!-- Team exists -->
+    <div
+      class="rounded-xl border border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-5 space-y-4">
+
+      <!-- Team header -->
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-amber-300 to-amber-600 text-black font-black text-lg">
+            <%= myTeam.name.charAt(0).toUpperCase() %>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3
+                class="font-black text-white text-lg uppercase tracking-tight"><%=
+                myTeam.name %></h3>
+              <% if (myTeam.tag) { %>
+              <span class="text-xs font-mono text-amber-400">[<%= myTeam.tag
+                %>]</span>
+              <% } %>
+            </div>
+            <div class="text-xs text-[#8a7d63] mt-0.5">
+              <span class="text-amber-400 font-black font-mono"><%=
+                myTeamMembers.length %></span> member<%= myTeamMembers.length
+              === 1 ? '' : 's' %>
+            </div>
+          </div>
+        </div>
+        <a href="/team/manage"
+          class="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-bold uppercase tracking-wider text-amber-300 hover:bg-amber-500/20 hover:border-amber-400 transition">
+          Manage
+        </a>
+      </div>
+
+      <!-- Member avatars -->
+      <div
+        class="flex flex-wrap items-center gap-2 pt-3 border-t border-amber-500/10">
+        <% myTeamMembers.slice(0, 6).forEach(function(m) { const u = m.user; %>
+        <div
+          class="flex items-center gap-2 rounded-lg border border-amber-500/15 bg-black/40 px-2.5 py-1.5">
+          <div
+            class="flex h-6 w-6 items-center justify-center rounded bg-gradient-to-br from-amber-300 to-amber-600 text-black font-black text-[10px]">
+            <%= (u.profile && u.profile.displayName ||
+            u.email).charAt(0).toUpperCase() %>
+          </div>
+          <span class="text-xs font-bold text-white truncate max-w-[80px]">
+            <%= u.profile && u.profile.displayName || u.email %>
+          </span>
+          <% if (m.role === 'IGL') { %>
+          <span class="text-[9px] font-black text-amber-400">IGL</span>
+          <% } %>
+        </div>
+        <% }) %>
+        <% if (myTeamMembers.length > 6) { %>
+        <span class="text-xs text-[#8a7d63] font-bold">+<%= myTeamMembers.length
+          - 6 %> more</span>
+        <% } %>
+      </div>
+
+      <!-- Invite link -->
+      <div class="pt-3 border-t border-amber-500/10">
+        <div
+          class="text-[10px] font-black uppercase tracking-wider text-amber-400 mb-2">Invite
+          Link</div>
+        <div class="flex items-center gap-2">
+          <input id="dashInviteUrl" type="text" readonly
+            value="<%= myTeamInviteUrl %>"
+            class="input font-mono text-[10px] flex-1 !bg-black/40 !py-2"
+            onclick="this.select()">
+          <button type="button"
+            onclick="navigator.clipboard.writeText(document.getElementById('dashInviteUrl').value); this.textContent='Copied!'; setTimeout(()=>this.textContent='Copy', 1500)"
+            class="rounded-lg border border-amber-400 bg-gradient-to-b from-amber-300 to-amber-500 px-3 py-2 text-xs font-black text-black shadow-[0_0_20px_-5px_rgba(245,200,66,0.7)] whitespace-nowrap">
+            Copy
+          </button>
+        </div>
+      </div>
+
+    </div>
+    <% } %>
+  </section>
+  <% } else { %>
+  <!-- PLAYER VIEW -->
+  <section>
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="h2">My Team</h2>
+    </div>
+
+    <% if (!myTeam) { %>
+    <!-- Player not in a team -->
+    <div
+      class="rounded-xl border border-amber-500/20 bg-black/60 backdrop-blur-sm p-8 text-center">
+      <div
+        class="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-amber-500/10 border border-amber-500/30 mb-4">
+        <%- icon('users', 'h-6 w-6 text-amber-400') %>
+      </div>
+      <h3
+        class="font-black text-white text-lg uppercase tracking-tight mb-2">Not
+        in a Team</h3>
+      <p class="text-xs text-[#a89878] max-w-sm mx-auto">
+        You're not part of any team. Ask your IGL for an invite link to join
+        their squad.
+      </p>
+    </div>
+    <% } else { %>
+    <!-- Player is in a team -->
+    <div
+      class="rounded-xl border border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-5 space-y-4">
+
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-amber-300 to-amber-600 text-black font-black text-lg">
+            <%= myTeam.name.charAt(0).toUpperCase() %>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3
+                class="font-black text-white text-lg uppercase tracking-tight"><%=
+                myTeam.name %></h3>
+              <% if (myTeam.tag) { %>
+              <span class="text-xs font-mono text-amber-400">[<%= myTeam.tag
+                %>]</span>
+              <% } %>
+            </div>
+            <div class="text-xs text-[#8a7d63] mt-0.5">
+              Led by <strong class="text-[#e8dfc9]"><%= myTeam.igl.profile &&
+                myTeam.igl.profile.displayName || myTeam.igl.email %></strong>
+            </div>
+          </div>
+        </div>
+        <span
+          class="rounded-full bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-400">
+          MEMBER
+        </span>
+      </div>
+
+      <!-- Teammates -->
+      <div class="pt-3 border-t border-amber-500/10">
+        <div
+          class="text-[10px] font-black uppercase tracking-wider text-amber-400 mb-2">
+          Your Squad (<%= myTeamMembers.length %> members)
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <% myTeamMembers.forEach(function(m) { const u = m.user; const isMe =
+          String(u._id) === String(user._id); %>
+          <div
+            class="flex items-center gap-2 rounded-lg border px-2.5 py-1.5 <%= isMe ? 'border-amber-500/40 bg-amber-500/10' : 'border-amber-500/15 bg-black/40' %>">
+            <div
+              class="flex h-6 w-6 items-center justify-center rounded bg-gradient-to-br from-amber-300 to-amber-600 text-black font-black text-[10px]">
+              <%= (u.profile && u.profile.displayName ||
+              u.email).charAt(0).toUpperCase() %>
+            </div>
+            <span
+              class="text-xs font-bold truncate max-w-[80px] <%= isMe ? 'text-amber-300' : 'text-white' %>">
+              <%= u.profile && u.profile.displayName || u.email %><%= isMe ?
+              ' (you)' : '' %>
+            </span>
+            <% if (m.role === 'IGL') { %>
+            <span class="text-[9px] font-black text-amber-400">IGL</span>
+            <% } %>
+          </div>
+          <% }) %>
+        </div>
+      </div>
+
+      <!-- Leave button -->
+      <div class="pt-3 border-t border-amber-500/10 flex justify-end">
+        <form method="post" action="/team/leave"
+          onsubmit="return confirm('Leave this team? You will need a new invite to rejoin.')">
+          <button type="submit"
+            class="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-xs font-bold uppercase tracking-wider text-rose-400 hover:bg-rose-500/20 hover:border-rose-500 transition">
+            <%- icon('log-out', 'h-3.5 w-3.5 inline -mt-0.5') %> Leave Team
+          </button>
+        </form>
+      </div>
+
+    </div>
+    <% } %>
+  </section>
+  <% } %>
+
+  <!-- EXISTING STATS CARDS -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
     <div
       class="rounded-xl border border-amber-500/25 bg-gradient-to-b from-[#0f0c08]/90 to-black/90 backdrop-blur-sm p-5 flex flex-col justify-between">
@@ -89,6 +314,7 @@ user.uidStatus === 'REJECTED' ? 'text-rose-400' : 'text-amber-400';
     </div>
   </div>
 
+  <!-- LIVE TOURNAMENTS -->
   <% if (live.length) { %>
   <section>
     <div class="flex items-center gap-2 mb-4"><span
@@ -99,6 +325,7 @@ user.uidStatus === 'REJECTED' ? 'text-rose-400' : 'text-amber-400';
   </section>
   <% } %>
 
+  <!-- UPCOMING -->
   <section>
     <div class="flex items-center justify-between mb-4"><h2 class="h2">Upcoming
         Registered Matches</h2><a href="/my-matches"
@@ -121,6 +348,7 @@ user.uidStatus === 'REJECTED' ? 'text-rose-400' : 'text-amber-400';
     <% } %>
   </section>
 
+  <!-- WALLET LEDGER -->
   <section>
     <div class="flex items-center justify-between mb-4"><h2 class="h2">Recent
         Wallet Ledger Activity</h2><a href="/wallet"

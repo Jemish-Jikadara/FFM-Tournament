@@ -23,13 +23,57 @@ const DONE = ['COMPLETED', 'CANCELLED'];
 async function myMatches(userId) {
   return Match.find({ 'registrations.user': userId }).sort({ matchStartAt: 1 }).limit(200);
 }
-
 router.get('/dashboard', wrap(async (req, res) => {
   const all = await myMatches(req.user._id);
   const live = all.filter((m) => LIVE.includes(stateOf(m)));
   const upcoming = all.filter((m) => !LIVE.includes(stateOf(m)) && !DONE.includes(stateOf(m)));
   const transactions = await Transaction.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(5);
-  res.render('dashboard', { title: 'Dashboard', live, upcoming, transactions });
+
+  // ✅ Team data for dashboard
+  const Team = require('../models/Team');
+  const TeamMember = require('../models/TeamMember');
+
+  let myTeam = null;
+  let myTeamMembers = [];
+  let myTeamInviteUrl = '';
+
+  if (req.user.isIGL()) {
+    // IGL — find their owned team
+    myTeam = await Team.findOne({ igl: req.user._id, status: 'ACTIVE' });
+    if (myTeam) {
+      myTeamMembers = await TeamMember.find({ team: myTeam._id, status: 'ACTIVE' })
+        .populate('user', 'profile email uidStatus role')
+        .sort({ role: 1, joinedAt: 1 });
+      myTeamInviteUrl = `${req.protocol}://${req.get('host')}/team/join/${myTeam.inviteCode}`;
+    }
+  } else {
+    // Player — find team they belong to
+    const membership = await TeamMember.findOne({
+      user: req.user._id,
+      status: 'ACTIVE',
+    }).populate({
+      path: 'team',
+      match: { status: 'ACTIVE' },
+      populate: { path: 'igl', select: 'profile email' },
+    });
+
+    if (membership && membership.team) {
+      myTeam = membership.team;
+      myTeamMembers = await TeamMember.find({ team: myTeam._id, status: 'ACTIVE' })
+        .populate('user', 'profile email uidStatus role')
+        .sort({ role: 1, joinedAt: 1 });
+    }
+  }
+
+  res.render('dashboard', {
+    title: 'Dashboard',
+    live,
+    upcoming,
+    transactions,
+    myTeam,
+    myTeamMembers,
+    myTeamInviteUrl,
+  });
 }));
 
 router.get('/my-matches', wrap(async (req, res) => {

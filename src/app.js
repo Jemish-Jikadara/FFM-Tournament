@@ -14,6 +14,7 @@ const icon = require('./utils/icons');
 const ui = require('./utils/ui');
 const { MODES } = require('./config/game');
 
+
 const app = express();
 const root = path.join(__dirname, '..');
 
@@ -66,6 +67,7 @@ app.use('/', require('./routes/auth'));
 app.use('/matches', require('./routes/matches'));
 app.use('/admin', require('./routes/admin'));
 app.use('/', require('./routes/player'));
+app.use('/', require('./routes/team'));
 
 app.use((req, res) => {
   res.status(404).render('error', { code: 404, message: 'The page you are looking for does not exist.' });
