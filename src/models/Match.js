@@ -53,6 +53,17 @@ const matchSchema = new Schema(
     registrationCount: { type: Number, default: 0 },
     registrations: [registrationSchema],
     results: [resultSchema],
+        // ✅ Point table images (12 total: 6 matches × 2 images each)
+    pointTables: [
+      {
+        matchNumber: { type: Number, required: true },      // 1-6
+        type: { type: String, enum: ['FF_SCREENSHOT', 'POINT_TABLE'], required: true },
+        url: { type: String, required: true },
+        publicId: { type: String, required: true },          // Cloudinary public_id for deletion
+        uploadedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+        uploadedAt: { type: Date, default: Date.now },
+      },
+    ],
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true }
@@ -143,5 +154,21 @@ matchSchema.methods.teamRegistered = function (teamId) {
 matchSchema.methods.slotOfTeam = function (teamId) {
   const reg = this.registrations.find((r) => String(r.teamId) === String(teamId));
   return reg ? reg.teamSlot : null;
+};
+// ✅ Check if specific image already uploaded
+matchSchema.methods.getPointTable = function (matchNum, type) {
+  if (!this.pointTables) return null;
+  return this.pointTables.find((p) => p.matchNumber === matchNum && p.type === type);
+};
+
+// ✅ Get all point tables grouped by match number
+matchSchema.methods.groupedPointTables = function () {
+  const grouped = {};
+  if (!this.pointTables) return grouped;
+  this.pointTables.forEach((p) => {
+    if (!grouped[p.matchNumber]) grouped[p.matchNumber] = {};
+    grouped[p.matchNumber][p.type] = p;
+  });
+  return grouped;
 };
 module.exports = mongoose.model('Match', matchSchema);

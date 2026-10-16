@@ -86,9 +86,8 @@ players.forEach(function (p) { (teams[p.team] = teams[p.team] || []).push(p);
         <span class="text-lg font-black text-white font-mono">
           <%= isTournament ? curTeams : cur %> / <%= isTournament ? maxTeams :
           match.maxPlayers %>
-          <% if (isTournament) { %>
-          <span class="text-xs text-amber-500/70 ml-1">teams</span>
-          <% } %>
+          <% if (isTournament) { %><span
+            class="text-xs text-amber-500/70 ml-1">teams</span><% } %>
         </span>
       </div>
       <div>
@@ -124,8 +123,7 @@ players.forEach(function (p) { (teams[p.team] = teams[p.team] || []).push(p);
       </div>
       <div>
         <% if (isTournament) { %>
-        <!-- ============ BR SQUAD TOURNAMENT JOIN ============ -->
-
+        <!-- BR SQUAD TOURNAMENT JOIN -->
         <% if (myTeamRegistered) { %>
         <div
           class="flex items-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-5 py-3 text-xs font-bold text-amber-400">
@@ -172,8 +170,7 @@ players.forEach(function (p) { (teams[p.team] = teams[p.team] || []).push(p);
         <% } %>
 
         <% } else { %>
-        <!-- ============ REGULAR MATCH JOIN ============ -->
-
+        <!-- REGULAR MATCH JOIN -->
         <% if (isRegistered) { %>
         <div
           class="flex items-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/30 px-5 py-3 text-xs font-bold text-amber-400">
@@ -333,6 +330,117 @@ players.forEach(function (p) { (teams[p.team] = teams[p.team] || []).push(p);
           <% }) %>
         </tbody>
       </table>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- POINT TABLES BUTTON -->
+  <% if (isTournament && isRegistered) { %>
+  <div class="flex justify-center">
+    <button type="button" data-open-point-tables
+      class="inline-flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-6 py-3 text-xs font-black uppercase tracking-wider text-amber-300 hover:bg-amber-500/20 hover:border-amber-400 transition">
+      <%- icon('image', 'h-4 w-4') %> View Point Tables (<%= match.pointTables ?
+      match.pointTables.length : 0 %>/12)
+    </button>
+  </div>
+
+  <!-- POINT TABLES MODAL -->
+  <div id="point-tables-modal"
+    class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div
+      class="w-full max-w-5xl max-h-[90vh] rounded-2xl border border-amber-500/25 bg-[#0f0c08]/95 backdrop-blur-md shadow-[0_0_60px_-15px_rgba(245,200,66,0.4)] overflow-hidden flex flex-col">
+      <!-- Header -->
+      <div
+        class="flex items-center justify-between p-5 border-b border-amber-500/20">
+        <div>
+          <h3
+            class="text-lg font-black uppercase text-white tracking-wider">Point
+            Tables</h3>
+          <p class="text-xs text-[#8a7d63] mt-1">6 matches · 2 images each</p>
+        </div>
+        <button type="button" data-close-point-tables
+          class="text-[#8a7d63] hover:text-amber-400 cursor-pointer transition">
+          <%- icon('x', 'h-5 w-5') %>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="overflow-y-auto p-5 space-y-5">
+        <% const grouped = match.groupedPointTables(); %>
+        <% for (let m = 1; m <= (match.totalMatches || 6); m++) { %>
+        <% const existing = grouped[m] || {}; %>
+        <div class="rounded-xl border border-amber-500/20 bg-black/40 p-4">
+          <div
+            class="flex items-center justify-between mb-3 pb-2 border-b border-amber-500/15">
+            <div class="flex items-center gap-2">
+              <div
+                class="flex h-7 w-7 items-center justify-center rounded bg-gradient-to-br from-amber-300 to-amber-600 text-black font-black text-xs">
+                <%= m %>
+              </div>
+              <h3
+                class="font-black text-white text-sm uppercase tracking-tight">Match
+                <%= m %></h3>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- FF SCREENSHOT -->
+            <div>
+              <div
+                class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] mb-2">FF
+                Screenshot</div>
+              <% if (existing.FF_SCREENSHOT) { %>
+              <a href="<%= existing.FF_SCREENSHOT.url %>" target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center justify-between w-full rounded-lg border border-amber-500/30 bg-black/40 px-4 py-3 hover:bg-amber-500/10 hover:border-amber-400 transition group">
+                <div class="flex items-center gap-2">
+                  <%- icon('image', 'h-4 w-4 text-amber-400') %>
+                  <span class="text-xs font-bold text-[#e8dfc9]">View FF
+                    Screenshot</span>
+                </div>
+                <%- icon('arrow-up-right',
+                'h-3.5 w-3.5 text-amber-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition')
+                %>
+              </a>
+              <% } else { %>
+              <div
+                class="w-full h-14 rounded-lg border border-dashed border-amber-500/20 bg-black/40 flex items-center justify-center">
+                <span
+                  class="text-[10px] text-[#8a7d63] font-bold uppercase">Pending</span>
+              </div>
+              <% } %>
+            </div>
+
+            <!-- POINT TABLE -->
+            <div>
+              <div
+                class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] mb-2">Point
+                Table</div>
+              <% if (existing.POINT_TABLE) { %>
+              <a href="<%= existing.POINT_TABLE.url %>" target="_blank"
+                rel="noopener noreferrer"
+                class="flex items-center justify-between w-full rounded-lg border border-amber-500/30 bg-black/40 px-4 py-3 hover:bg-amber-500/10 hover:border-amber-400 transition group">
+                <div class="flex items-center gap-2">
+                  <%- icon('table', 'h-4 w-4 text-amber-400') %>
+                  <span class="text-xs font-bold text-[#e8dfc9]">View Point
+                    Table</span>
+                </div>
+                <%- icon('arrow-up-right',
+                'h-3.5 w-3.5 text-amber-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition')
+                %>
+              </a>
+              <% } else { %>
+              <div
+                class="w-full h-14 rounded-lg border border-dashed border-amber-500/20 bg-black/40 flex items-center justify-center">
+                <span
+                  class="text-[10px] text-[#8a7d63] font-bold uppercase">Pending</span>
+              </div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+        <% } %>
+      </div>
     </div>
   </div>
   <% } %>

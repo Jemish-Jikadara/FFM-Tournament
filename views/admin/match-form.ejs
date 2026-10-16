@@ -98,27 +98,25 @@
         <label class="label" for="registration_start_at">Registration
           Opens</label>
         <input id="registration_start_at" name="registration_start_at"
-          type="datetime-local" required
-          value="<%= f.registration_start_at %>" class="input">
+          type="datetime-local" required value="<%= f.registration_start_at %>"
+          class="input">
       </div>
       <div>
         <label class="label" for="registration_close_at">Registration
           Closes</label>
         <input id="registration_close_at" name="registration_close_at"
-          type="datetime-local" required
-          value="<%= f.registration_close_at %>" class="input">
+          type="datetime-local" required value="<%= f.registration_close_at %>"
+          class="input">
       </div>
       <div>
         <label class="label" for="room_release_at">Room Release</label>
         <input id="room_release_at" name="room_release_at" type="datetime-local"
-          required
-          value="<%= f.room_release_at %>" class="input">
+          required value="<%= f.room_release_at %>" class="input">
       </div>
       <div>
         <label class="label" for="match_start_at">Match Start</label>
         <input id="match_start_at" name="match_start_at" type="datetime-local"
-          required
-          value="<%= f.match_start_at %>" class="input">
+          required value="<%= f.match_start_at %>" class="input">
       </div>
     </div>
   </div>
@@ -183,11 +181,143 @@
       <div>
         <label class="label" for="room_password">Room Password</label>
         <input id="room_password" name="room_password"
-          value="<%= f.room_password || '' %>" class="input font-mono"
-          autocomplete="off">
+          value="<%= f.room_password || '' %>"
+          class="input font-mono" autocomplete="off">
       </div>
     </div>
   </div>
+
+  <!-- POINT TABLES (only for BR Squad & edit mode) -->
+  <% if (isEdit && isTournamentForm) { %>
+  <div id="point-tables-section" class="space-y-4">
+    <h2
+      class="text-xs font-extrabold uppercase tracking-wider text-amber-400 mb-3 flex items-center gap-1.5">
+      <%- icon('image', 'h-4 w-4') %> Point Table Images (12 total)
+    </h2>
+    <p class="text-[11px] text-[#8a7d63]">
+      Upload 2 images per match — 1 Free Fire screenshot + 1 your custom point
+      table.
+    </p>
+
+    <div class="space-y-3">
+      <% for (let m = 1; m <= (edit.totalMatches || 6); m++) { %>
+      <% const existing = edit.groupedPointTables()[m] || {}; %>
+      <div class="rounded-xl border border-amber-500/20 bg-black/40 p-4">
+        <div
+          class="flex items-center justify-between mb-3 pb-2 border-b border-amber-500/15">
+          <div class="flex items-center gap-2">
+            <div
+              class="flex h-7 w-7 items-center justify-center rounded bg-gradient-to-br from-amber-300 to-amber-600 text-black font-black text-xs">
+              <%= m %>
+            </div>
+            <h3
+              class="font-black text-white text-sm uppercase tracking-tight">Match
+              <%= m %></h3>
+          </div>
+          <%
+          const ffUploaded = !!existing.FF_SCREENSHOT;
+          const ptUploaded = !!existing.POINT_TABLE;
+          const bothDone = ffUploaded && ptUploaded;
+          %>
+          <span
+            class="rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wider <%= bothDone ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-400' : 'bg-amber-500/15 border border-amber-500/40 text-amber-400' %>">
+            <%= bothDone ? 'Complete' : (ffUploaded || ptUploaded) ? 'Partial' :
+            'Pending' %>
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- FREE FIRE SCREENSHOT -->
+          <div>
+            <label
+              class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] block mb-2">
+              <%- icon('image', 'h-3 w-3 inline -mt-0.5') %> FF Screenshot
+            </label>
+            <% if (ffUploaded) { %>
+            <div class="relative group">
+              <img src="<%= existing.FF_SCREENSHOT.url %>"
+                alt="FF Screenshot Match <%= m %>"
+                class="w-full h-32 object-cover rounded-lg border border-emerald-500/40">
+              <div
+                class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition rounded-lg flex items-center justify-center">
+                <form method="post"
+                  action="/admin/matches/<%= edit._id %>/point-table/<%= m %>/FF_SCREENSHOT/delete"
+                  data-confirm="Delete this image?">
+                  <button type="submit"
+                    class="rounded-md bg-rose-500/20 border border-rose-500/40 px-3 py-1.5 text-xs font-bold text-rose-300 hover:bg-rose-500/30 transition">
+                    <%- icon('trash-2', 'h-3.5 w-3.5 inline -mt-0.5') %> Delete
+                  </button>
+                </form>
+              </div>
+            </div>
+            <% } else { %>
+            <form method="post"
+              action="/admin/matches/<%= edit._id %>/point-table"
+              enctype="multipart/form-data">
+              <input type="hidden" name="match_number" value="<%= m %>">
+              <input type="hidden" name="image_type" value="FF_SCREENSHOT">
+              <label
+                class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-amber-500/30 rounded-lg cursor-pointer hover:border-amber-500/60 hover:bg-amber-500/5 transition">
+                <%- icon('upload', 'h-6 w-6 text-amber-400 mb-2') %>
+                <span class="text-xs font-bold text-[#e8dfc9]">Upload
+                  Screenshot</span>
+                <span class="text-[10px] text-[#8a7d63] mt-1">JPG/PNG · max
+                  5MB</span>
+                <input type="file" name="image" accept="image/*" required
+                  data-auto-submit class="hidden">
+              </label>
+            </form>
+            <% } %>
+          </div>
+
+          <!-- POINT TABLE -->
+          <div>
+            <label
+              class="text-[10px] font-bold uppercase tracking-wider text-[#8a7d63] block mb-2">
+              <%- icon('table', 'h-3 w-3 inline -mt-0.5') %> Point Table
+            </label>
+            <% if (ptUploaded) { %>
+            <div class="relative group">
+              <img src="<%= existing.POINT_TABLE.url %>"
+                alt="Point Table Match <%= m %>"
+                class="w-full h-32 object-cover rounded-lg border border-emerald-500/40">
+              <div
+                class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition rounded-lg flex items-center justify-center">
+                <form method="post"
+                  action="/admin/matches/<%= edit._id %>/point-table/<%= m %>/POINT_TABLE/delete"
+                  data-confirm="Delete this image?">
+                  <button type="submit"
+                    class="rounded-md bg-rose-500/20 border border-rose-500/40 px-3 py-1.5 text-xs font-bold text-rose-300 hover:bg-rose-500/30 transition">
+                    <%- icon('trash-2', 'h-3.5 w-3.5 inline -mt-0.5') %> Delete
+                  </button>
+                </form>
+              </div>
+            </div>
+            <% } else { %>
+            <form method="post"
+              action="/admin/matches/<%= edit._id %>/point-table"
+              enctype="multipart/form-data">
+              <input type="hidden" name="match_number" value="<%= m %>">
+              <input type="hidden" name="image_type" value="POINT_TABLE">
+              <label
+                class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-amber-500/30 rounded-lg cursor-pointer hover:border-amber-500/60 hover:bg-amber-500/5 transition">
+                <%- icon('upload', 'h-6 w-6 text-amber-400 mb-2') %>
+                <span class="text-xs font-bold text-[#e8dfc9]">Upload Point
+                  Table</span>
+                <span class="text-[10px] text-[#8a7d63] mt-1">JPG/PNG · max
+                  5MB</span>
+                <input type="file" name="image" accept="image/*" required
+                  data-auto-submit class="hidden">
+              </label>
+            </form>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      <% } %>
+    </div>
+  </div>
+  <% } %>
 
   <!-- RULES -->
   <div>
@@ -208,8 +338,5 @@
     </a>
   </div>
 </form>
-
-<!-- TOURNAMENT MODE TOGGLE SCRIPT -->
-<script src="/js/match-form.js" defer></script>
 
 <%- include('../partials/admin-close') %>

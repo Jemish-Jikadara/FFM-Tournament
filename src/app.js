@@ -47,7 +47,7 @@ app.use((req, res, next) => {
   Object.assign(res.locals, {
     icon, paise: format.paise, date: format.date, statusLabel: format.statusLabel,
     statusPill: ui.statusPill, roleBadge: ui.roleBadge, stateBadge: ui.stateBadge,
-    path: req.path, title: 'ClashIQ', modesList: MODES, testMode: env.testModeDeposits,
+    path: req.path, title: 'FFM', modesList: MODES, testMode: env.testModeDeposits,
     user: null, wallet: null, unread: 0, flash: null, adminNav: [], active: '',
   });
   next();
@@ -83,5 +83,6 @@ app.use((err, req, res, next) => {
     message: env.isProd ? 'Something went wrong on our side. Please try again.' : err.message,
   });
 });
+
 
 module.exports = app;

@@ -12,6 +12,7 @@ const { requireRole } = require('../middleware/auth');
 const { notify, audit } = require('../services/notify');
 const { cancelMatch, settleMatch } = require('../services/match');
 const { fromInput, rupeesToPaise, paise } = require('../utils/format');
+const { uploadPointTable, deleteImage } = require('../services/cloudinary');
 const { MODES, MAPS, ROLES, USER_STATUSES, modeBySlug } = require('../config/game');
 
 const router = express.Router();
@@ -573,6 +574,111 @@ router.get('/risk-flags', requireRole(OWNERS), wrap(async (req, res) => {
     if (u) flags.push({ level: 'MEDIUM', type: 'FREQUENT_DISPUTES', user: u, detail: `${d.n} disputes filed` });
   }
   res.render('admin/risk-flags', { title: 'Risk Telemetry', active: 'risk', flags });
+}));
+router.post(
+  '/matches/:id/point-table',
+  requireRole(STAFF),
+  uploadPointTable.single('image'),
+  wrap(async (req, res) => {
+    if (!idOk(req.params.id)) {
+      res.flash('error', 'Invalid match.');
+      return res.redirect('/admin/matches');
+    }
+
+    const m = await Match.findById(req.params.id);
+    if (!m) {
+      res.flash('error', 'Match not found.');
+      return res.redirect('/admin/matches');
+    }
+
+    if (m.matchFormat !== 'BR_SQUAD') {
+      res.flash('error', 'Point tables are only for BR Squad tournaments.');
+      return res.redirect(`/admin/matches/${m._id}/edit`);
+    }
+
+    const matchNumber = parseInt(req.body.match_number, 10);
+    const type = req.body.image_type;
+
+    if (!(matchNumber >= 1 && matchNumber <= 20)) {
+      res.flash('error', 'Invalid match number.');
+      return res.redirect(`/admin/matches/${m._id}/edit`);
+    }
+
+    if (!['FF_SCREENSHOT', 'POINT_TABLE'].includes(type)) {
+      res.flash('error', 'Invalid image type.');
+      return res.redirect(`/admin/matches/${m._id}/edit`);
+    }
+
+    if (!req.file) {
+      res.flash('error', 'Please select an image to upload.');
+      return res.redirect(`/admin/matches/${m._id}/edit`);
+    }
+
+    // Check if image already exists for this slot
+    const existing = m.pointTables.find(
+      (p) => p.matchNumber === matchNumber && p.type === type
+    );
+
+    if (existing) {
+      // Delete old image from Cloudinary
+      await deleteImage(existing.publicId);
+      // Remove old entry
+      m.pointTables = m.pointTables.filter(
+        (p) => !(p.matchNumber === matchNumber && p.type === type)
+      );
+    }
+
+    // Add new entry
+    m.pointTables.push({
+      matchNumber,
+      type,
+      url: req.file.path,
+      publicId: req.file.filename,
+      uploadedBy: req.user._id,
+      uploadedAt: new Date(),
+    });
+
+    await m.save();
+    await audit(req, 'POINT_TABLE_UPLOAD', m.publicMatchCode, `Match ${matchNumber} - ${type}`);
+
+    res.flash('success', `Match ${matchNumber} ${type === 'FF_SCREENSHOT' ? 'screenshot' : 'point table'} uploaded.`);
+    res.redirect(`/admin/matches/${m._id}/edit`);
+  })
+);
+
+router.post('/matches/:id/point-table/:matchNum/:type/delete', requireRole(STAFF), wrap(async (req, res) => {
+  if (!idOk(req.params.id)) {
+    res.flash('error', 'Invalid match.');
+    return res.redirect('/admin/matches');
+  }
+
+  const m = await Match.findById(req.params.id);
+  if (!m) {
+    res.flash('error', 'Match not found.');
+    return res.redirect('/admin/matches');
+  }
+
+  const matchNumber = parseInt(req.params.matchNum, 10);
+  const type = req.params.type;
+
+  const entry = m.pointTables.find(
+    (p) => p.matchNumber === matchNumber && p.type === type
+  );
+
+  if (!entry) {
+    res.flash('error', 'Image not found.');
+    return res.redirect(`/admin/matches/${m._id}/edit`);
+  }
+
+  await deleteImage(entry.publicId);
+  m.pointTables = m.pointTables.filter(
+    (p) => !(p.matchNumber === matchNumber && p.type === type)
+  );
+  await m.save();
+
+  await audit(req, 'POINT_TABLE_DELETE', m.publicMatchCode, `Match ${matchNumber} - ${type}`);
+  res.flash('success', 'Image deleted.');
+  res.redirect(`/admin/matches/${m._id}/edit`);
 }));
 
 module.exports = router;
