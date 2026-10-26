@@ -1,0 +1,52 @@
+<div class="py-8 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto space-y-4">
+
+  <a href="/chat" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8a7d63] hover:text-amber-400 transition">
+    <%- icon('arrow-left', 'h-4 w-4') %> Back to Chats
+  </a>
+
+  <div class="rounded-2xl border border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm overflow-hidden">
+    <!-- Header -->
+    <div class="p-5 border-b border-amber-500/20 flex items-center justify-between gap-3">
+      <div>
+        <h1 class="text-lg font-black text-white uppercase tracking-tight"><%= group.name %></h1>
+        <p class="text-xs text-[#8a7d63] mt-1">Host: <%= group.host.profile && group.host.profile.displayName || group.host.email %></p>
+      </div>
+      <span class="rounded-full bg-amber-500/10 border border-amber-500/30 px-2.5 py-0.5 text-[10px] font-black text-amber-400 uppercase">
+        Read-only
+      </span>
+    </div>
+
+    <!-- Messages -->
+    <div class="p-5 space-y-3 max-h-[600px] overflow-y-auto">
+      <% if (!messages.length) { %>
+        <p class="text-center text-xs text-[#8a7d63] py-12">No messages yet.</p>
+      <% } else { %>
+        <% messages.forEach(function(m) { %>
+          <% if (m.deleted) return; %>
+          <div class="flex items-start gap-3 p-3 rounded-lg bg-black/40 border border-amber-500/15">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-300 to-amber-600 text-black font-black text-xs shrink-0">
+              <%= (m.sender.profile && m.sender.profile.displayName || m.sender.email).charAt(0).toUpperCase() %>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-[10px] font-black text-amber-400 uppercase">Host</span>
+                <span class="text-[10px] text-[#8a7d63]"><%= date(m.createdAt) %></span>
+              </div>
+              <% if (m.message) { %><p class="text-sm text-[#e8dfc9] whitespace-pre-line break-words"><%= m.message %></p><% } %>
+              <% if (m.imageUrl) { %>
+  <a href="<%= m.imageUrl %>" target="_blank" rel="noopener noreferrer"
+    class="inline-flex items-center gap-2 mt-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs font-bold text-amber-300 hover:bg-amber-500/20 hover:border-amber-400 transition">
+    <%- icon('image', 'h-4 w-4') %>
+    Open Image
+    <%- icon('arrow-up-right', 'h-3 w-3') %>
+  </a>
+<% } %>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<script src="/js/chat.js" defer></script>

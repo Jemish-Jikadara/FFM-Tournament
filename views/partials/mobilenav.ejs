@@ -1,12 +1,29 @@
 <%
-const items = [
+// Staff ke liye alag, players ke liye alag
+let items;
+
+if (user && user.isStaff()) {
+// ADMIN / HOST
+items = [
+{ label: 'Admin', href: user.isAdmin() ? '/admin/dashboard' : '/admin/disputes',
+icon: 'shield' },
 { label: 'Matches', href: '/matches', icon: 'swords' },
-{ label: 'My Matches', href: '/my-matches', icon: 'flame' },
-{ label: 'Ranks', href: '/leaderboard', icon: 'trophy' },
+{ label: 'Chats', href: '/host/chats', icon: 'message-square' },
 { label: 'Wallet', href: '/wallet', icon: 'wallet' },
 { label: 'Profile', href: '/profile', icon: 'user' },
 ];
+} else {
+// PLAYER / IGL
+items = [
+{ label: 'Matches', href: '/matches', icon: 'swords' },
+{ label: 'My Matches', href: '/my-matches', icon: 'flame' },
+{ label: 'Wallet', href: '/wallet', icon: 'wallet' },
+{ label: 'Chats', href: '/chat', icon: 'message-square' },
+{ label: 'Profile', href: '/profile', icon: 'user' },
+];
+}
 %>
+
 <nav
   class="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-amber-500/20 bg-black/95 backdrop-blur-md">
   <div class="flex h-16 items-center justify-around px-2">

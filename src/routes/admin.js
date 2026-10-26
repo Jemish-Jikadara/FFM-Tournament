@@ -9,6 +9,8 @@ const Dispute = require('../models/Dispute');
 const AuditLog = require('../models/AuditLog');
 const wrap = require('../utils/wrap');
 const { requireRole } = require('../middleware/auth');
+
+const SystemSettings = require('../models/SystemSettings');
 const { notify, audit } = require('../services/notify');
 const { cancelMatch, settleMatch } = require('../services/match');
 const { fromInput, rupeesToPaise, paise } = require('../utils/format');
@@ -28,6 +30,7 @@ const ADMIN_NAV = [
   { key: 'create', label: 'Create Match', href: '/admin/matches/create', icon: 'circle-plus', roles: STAFF },
   { key: 'results', label: 'Result Verification', href: '/admin/results', icon: 'trophy', roles: STAFF },
   { key: 'identities', label: 'UID Verification', href: '/admin/gaming-identities', icon: 'users', roles: SUPPORTERS },
+  { key: 'system', label: 'System Controls', href: '/admin/system', icon: 'settings', roles: ['SUPER_ADMIN'] },
   { key: 'disputes', label: 'Disputes', href: '/admin/disputes', icon: 'triangle-alert', roles: SUPPORTERS },
   { key: 'users', label: 'User Accounts', href: '/admin/users', icon: 'users', roles: OWNERS },
   { key: 'audit', label: 'Audit Logs', href: '/admin/audit-logs', icon: 'file-text', roles: OWNERS },
@@ -680,5 +683,41 @@ router.post('/matches/:id/point-table/:matchNum/:type/delete', requireRole(STAFF
   res.flash('success', 'Image deleted.');
   res.redirect(`/admin/matches/${m._id}/edit`);
 }));
+// ============================================================
+// SYSTEM CONTROLS — SUPER ADMIN ONLY
+// ============================================================
+router.get('/system', requireRole(['SUPER_ADMIN']), wrap(async (req, res) => {
+  const settings = await SystemSettings.getSettings();
+  res.render('admin/system', {
+    title: 'System Controls',
+    active: 'system',
+    settings,
+  });
+}));
 
+router.post('/system/wallet/toggle', requireRole(['SUPER_ADMIN']), wrap(async (req, res) => {
+  const settings = await SystemSettings.getSettings();
+  
+  if (settings.walletFrozen) {
+    // Unfreeze
+    settings.walletFrozen = false;
+    settings.walletFrozenReason = '';
+    settings.walletFrozenAt = null;
+    settings.walletFrozenBy = null;
+    await settings.save();
+    await audit(req, 'WALLET_UNFREEZE', 'system', 'Wallet unfrozen');
+    res.flash('success', 'Wallet system UNFROZEN. All transactions resumed.');
+  } else {
+    // Freeze
+    settings.walletFrozen = true;
+    settings.walletFrozenReason = String(req.body.reason || 'Emergency freeze by admin').slice(0, 200);
+    settings.walletFrozenAt = new Date();
+    settings.walletFrozenBy = req.user._id;
+    await settings.save();
+    await audit(req, 'WALLET_FREEZE', 'system', settings.walletFrozenReason);
+    res.flash('error', 'Wallet system FROZEN. All transactions blocked.');
+  }
+  
+  res.redirect('/admin/system');
+}));
 module.exports = router;

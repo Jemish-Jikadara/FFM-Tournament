@@ -1,0 +1,38 @@
+<%- include('../partials/admin-open') %>
+
+<a href="/host/chats" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8a7d63] hover:text-amber-400 mb-2 transition">
+  <%- icon('arrow-left', 'h-3.5 w-3.5') %> Back to groups
+</a>
+
+<h1 class="h1">Create Chat Group</h1>
+<p class="text-xs text-[#8a7d63] mt-1">Players will join via invite link</p>
+
+<% if (error) { %>
+  <div class="rounded-lg bg-rose-500/10 border border-rose-500/30 p-3 text-xs font-semibold text-rose-400">
+    <%- icon('circle-alert', 'h-4 w-4 inline -mt-0.5 mr-1') %> <%= error %>
+  </div>
+<% } %>
+
+<form method="post" action="/host/chats/create" class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-6 space-y-5 max-w-2xl">
+  <div>
+    <label class="label" for="name">Group Name</label>
+    <input id="name" name="name" type="text" required minlength="3" maxlength="60"
+      value="<%= form.name || '' %>" placeholder="e.g. FFM-9PM Match Updates" class="input">
+  </div>
+
+  <div>
+    <label class="label" for="description">Description (optional)</label>
+    <textarea id="description" name="description" rows="3" maxlength="200"
+      placeholder="What is this group about?"
+      class="input"><%= form.description || '' %></textarea>
+  </div>
+
+  <div class="flex gap-3">
+    <button type="submit" class="btn-primary bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black border border-amber-400">
+      <%- icon('plus', 'h-4 w-4') %> Create Group
+    </button>
+    <a href="/host/chats" class="btn-ghost border-amber-500/30 text-amber-300 hover:bg-amber-500/10">Cancel</a>
+  </div>
+</form>
+
+<%- include('../partials/admin-close') %>

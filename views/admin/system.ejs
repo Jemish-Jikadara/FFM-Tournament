@@ -1,0 +1,91 @@
+<%- include('../partials/admin-open') %>
+
+<div>
+    <h1 class="h1">System Controls</h1>
+    <p class="text-xs text-[#8a7d63] mt-1">Emergency controls — SUPER ADMIN
+        only</p>
+</div>
+
+<!-- WALLET FREEZE -->
+<div class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-6">
+    <div class="flex items-center justify-between gap-4 mb-4">
+        <div class="flex items-center gap-3">
+            <div
+                class="flex h-12 w-12 items-center justify-center rounded-xl <%= settings.walletFrozen ? 'bg-rose-500/20 border-2 border-rose-500/50' : 'bg-emerald-500/20 border-2 border-emerald-500/50' %>">
+                <%- icon('wallet', `h-6 w-6 ${settings.walletFrozen ?
+                'text-rose-400' : 'text-emerald-400'}`) %>
+            </div>
+            <div>
+                <h2 class="h2">Wallet System</h2>
+                <p class="text-xs text-[#8a7d63] mt-1">
+                    <%= settings.walletFrozen ?
+                    'FROZEN — All transactions blocked' :
+                    'ACTIVE — All transactions working' %>
+                </p>
+            </div>
+        </div>
+        <span
+            class="rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider <%= settings.walletFrozen ? 'bg-rose-500/20 border border-rose-500/40 text-rose-400' : 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-400' %>">
+            <%= settings.walletFrozen ? 'FROZEN' : 'ACTIVE' %>
+        </span>
+    </div>
+
+    <% if (settings.walletFrozen) { %>
+    <div class="rounded-lg bg-rose-500/10 border border-rose-500/30 p-3 mb-4">
+        <div class="text-xs font-bold text-rose-400 mb-1">Frozen Details</div>
+        <div class="text-xs text-[#a89878]">
+            <div><strong>Reason:</strong> <%= settings.walletFrozenReason
+                %></div>
+            <div><strong>Frozen At:</strong> <%= date(settings.walletFrozenAt)
+                %></div>
+        </div>
+    </div>
+    <% } %>
+
+    <form method="post" action="/admin/system/wallet/toggle"
+        data-confirm="<%= settings.walletFrozen ? 'Unfreeze wallet? All transactions will resume.' : 'FREEZE wallet? This will block all deposits, withdrawals, and prize credits.' %>">
+
+        <% if (!settings.walletFrozen) { %>
+        <div class="mb-3">
+            <label class="label" for="reason">Reason for freezing</label>
+            <input id="reason" name="reason" type="text" maxlength="200"
+                placeholder="e.g. Suspicious activity detected" class="input">
+        </div>
+        <% } %>
+
+        <button type="submit"
+            class="<%= settings.walletFrozen ? 'btn-primary bg-gradient-to-b from-emerald-300 to-emerald-500 text-black font-black border border-emerald-400' : 'btn-danger' %> w-full py-3">
+            <%- icon(settings.walletFrozen ? 'unlock' : 'lock', 'h-4 w-4') %>
+            <%= settings.walletFrozen ? 'Unfreeze Wallet System' :
+            'FREEZE Wallet System' %>
+        </button>
+    </form>
+
+    <p class="text-[11px] text-[#8a7d63] mt-3">
+        <strong>Note:</strong> Existing balances stay safe. Only new
+        transactions are blocked.
+    </p>
+</div>
+
+<!-- INFO -->
+<div class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-5">
+    <h3
+        class="text-xs font-extrabold uppercase tracking-wider text-amber-400 mb-3">What
+        gets blocked when frozen</h3>
+    <ul class="text-xs text-[#a89878] space-y-1.5">
+        <li class="flex items-center gap-2"><%- icon('x',
+            'h-3 w-3 text-rose-400') %> Deposit / Add cash</li>
+        <li class="flex items-center gap-2"><%- icon('x',
+            'h-3 w-3 text-rose-400') %> Withdrawal requests</li>
+        <li class="flex items-center gap-2"><%- icon('x',
+            'h-3 w-3 text-rose-400') %> Match entry fees</li>
+        <li class="flex items-center gap-2"><%- icon('x',
+            'h-3 w-3 text-rose-400') %> Prize credits</li>
+        <li class="flex items-center gap-2"><%- icon('check',
+            'h-3 w-3 text-emerald-400') %> Existing balances stay safe</li>
+        <li class="flex items-center gap-2"><%- icon('check',
+            'h-3 w-3 text-emerald-400') %> Browsing / viewing stays working</li>
+    </ul>
+</div>
+
+<%- include('../partials/admin-close') %>

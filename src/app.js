@@ -69,6 +69,7 @@ app.use('/admin', require('./routes/admin'));
 // app.use('/',require('./routes/tournament'))
 app.use('/', require('./routes/player'));
 app.use('/', require('./routes/team'));
+app.use('/', require('./routes/chat'));
 
 app.use((req, res) => {
   res.status(404).render('error', { code: 404, message: 'The page you are looking for does not exist.' });

@@ -29,6 +29,32 @@ const pointTableStorage = new CloudinaryStorage({
     };
   },
 });
+// Add after pointTableStorage
+const chatStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req) => {
+    const groupId = req.params.id || 'temp';
+    return {
+      folder: `ffm/chat/${groupId}`,
+      allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+      public_id: `chat-${Date.now()}`,
+      transformation: [
+        { width: 1200, height: 1200, crop: 'limit' },
+        { quality: 'auto:good' },
+      ],
+    };
+  },
+});
+
+const uploadChatImage = multer({
+  storage: chatStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only image files allowed.'), false);
+  },
+});
+
 
 const uploadPointTable = multer({
   storage: pointTableStorage,
@@ -48,4 +74,4 @@ async function deleteImage(publicId) {
   }
 }
 
-module.exports = { cloudinary, uploadPointTable, deleteImage };
+module.exports = { cloudinary, uploadPointTable, deleteImage, uploadChatImage };

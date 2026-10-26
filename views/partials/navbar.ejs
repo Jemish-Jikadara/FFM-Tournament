@@ -6,6 +6,15 @@ const links = [
 { name: 'Leaderboard', href: '/leaderboard', icon: 'trophy' },
 { name: 'Wallet', href: '/wallet', icon: 'wallet' },
 ];
+
+if (user) {
+  if (user.isStaff()) {
+    links.push({ name: 'Chats', href: '/host/chats', icon: 'message-square' });
+  } else {
+    
+    links.push({ name: 'Chats', href: '/chat', icon: 'message-square' });
+  }
+}
 const isActive = (h) => path === h || (h !== '/' && path.startsWith(h + '/'));
 %>
 <header

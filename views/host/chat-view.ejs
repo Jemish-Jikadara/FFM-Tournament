@@ -1,0 +1,100 @@
+<%- include('../partials/admin-open') %>
+
+<div class="flex items-center justify-between gap-4 mb-4">
+  <div>
+    <a href="/host/chats" class="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8a7d63] hover:text-amber-400 mb-1 transition">
+      <%- icon('arrow-left', 'h-3.5 w-3.5') %> Back
+    </a>
+    <h1 class="h1"><%= group.name %></h1>
+    <p class="text-xs text-[#8a7d63] mt-1"><%= members.length %> members · <%= group.messageCount %> messages</p>
+  </div>
+  <form method="post" action="/host/chats/<%= group._id %>/delete" data-confirm="Delete this group permanently?">
+    <button type="submit" class="btn-danger text-xs">
+      <%- icon('trash-2', 'h-3.5 w-3.5') %> Delete Group
+    </button>
+  </form>
+</div>
+
+<!-- INVITE LINK -->
+<div class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-4 mb-4">
+  <div class="flex items-center justify-between mb-2">
+    <label class="text-[10px] font-bold uppercase tracking-wider text-amber-400">Invite Link</label>
+    <form method="post" action="/host/chats/<%= group._id %>/regenerate" data-confirm="Regenerate invite link? Old link will stop working.">
+      <button type="submit" class="text-[10px] font-bold text-amber-400 hover:text-amber-300 uppercase">Regenerate</button>
+    </form>
+  </div>
+  <div class="flex gap-2">
+    <input type="text" readonly value="<%= inviteUrl %>" id="inviteInput" onclick="this.select()"
+      class="input font-mono text-xs flex-1 !bg-black/40">
+    <button type="button" data-copy="<%= inviteUrl %>"
+      class="btn-primary !py-2 !px-3 text-xs">Copy</button>
+  </div>
+  <p class="text-[10px] text-[#8a7d63] mt-2">Share this link on WhatsApp. Players will join with read-only access.</p>
+</div>
+
+<!-- SEND MESSAGE -->
+<div class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-4 mb-4">
+  <form method="post" action="/host/chats/<%= group._id %>/send" class="space-y-3">
+    <textarea name="message" rows="3" maxlength="2000" required placeholder="Type your message..."
+      class="input"></textarea>
+    <button type="submit" class="btn-primary bg-gradient-to-b from-amber-300 to-amber-500 text-black font-black border border-amber-400">
+      <%- icon('send', 'h-4 w-4') %> Send Message
+    </button>
+  </form>
+
+  <div class="border-t border-amber-500/15 pt-3 mt-3">
+    <form method="post" action="/host/chats/<%= group._id %>/image" enctype="multipart/form-data">
+      <label class="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed border-amber-500/30 rounded-lg cursor-pointer hover:border-amber-500/60 transition">
+        <%- icon('image', 'h-4 w-4 text-amber-400') %>
+        <span class="text-xs font-bold text-[#e8dfc9]">Upload Image</span>
+        <input type="file" name="image" accept="image/*" required data-auto-submit class="hidden">
+      </label>
+    </form>
+  </div>
+</div>
+
+<!-- MESSAGES -->
+<div class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-4">
+  <h2 class="h2 mb-4">Messages</h2>
+
+  <% if (!messages.length) { %>
+    <p class="text-center text-xs text-[#8a7d63] py-8">No messages yet. Send your first message above!</p>
+  <% } else { %>
+    <div class="space-y-3 max-h-[500px] overflow-y-auto">
+      <% messages.forEach(function(m) { %>
+        <div class="flex items-start gap-3 p-3 rounded-lg bg-black/40 border border-amber-500/15 group">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-[10px] font-black text-amber-400 uppercase">You (Host)</span>
+              <span class="text-[10px] text-[#8a7d63]"><%= date(m.createdAt) %></span>
+            </div>
+            <% if (m.deleted) { %>
+              <p class="text-xs italic text-[#8a7d63]">Message deleted</p>
+            <% } else { %>
+              <% if (m.message) { %><p class="text-sm text-[#e8dfc9] whitespace-pre-line break-words"><%= m.message %></p><% } %>
+              <% if (m.imageUrl) { %>
+  <a href="<%= m.imageUrl %>" target="_blank" rel="noopener noreferrer"
+    class="inline-flex items-center gap-2 mt-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2.5 text-xs font-bold text-amber-300 hover:bg-amber-500/20 hover:border-amber-400 transition">
+    <%- icon('image', 'h-4 w-4') %>
+    Open Image
+    <%- icon('arrow-up-right', 'h-3 w-3') %>
+  </a>
+<% } %>
+            <% } %>
+          </div>
+          <% if (!m.deleted) { %>
+            <form method="post" action="/host/chats/<%= group._id %>/message/<%= m._id %>/delete"
+              data-confirm="Delete this message?" class="opacity-0 group-hover:opacity-100 transition">
+              <button type="submit" class="text-rose-400 hover:text-rose-300 p-1">
+                <%- icon('trash-2', 'h-3.5 w-3.5') %>
+              </button>
+            </form>
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+<script src="/public/js/chat.js" defer></script>
+
+<%- include('../partials/admin-close') %>

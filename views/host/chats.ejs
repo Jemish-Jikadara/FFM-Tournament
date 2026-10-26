@@ -1,0 +1,41 @@
+<%- include('../partials/admin-open') %>
+
+<div class="flex items-center justify-between gap-4">
+  <div>
+    <h1 class="h1">My Chat Groups</h1>
+    <p class="text-xs text-[#8a7d63] mt-1">Broadcast messages to your players</p>
+  </div>
+  <a href="/host/chats/create" class="btn-primary bg-gradient-to-b from-amber-300 to-amber-500 hover:from-amber-200 hover:to-amber-400 text-black font-black border border-amber-400">
+    <%- icon('plus', 'h-4 w-4') %> New Group
+  </a>
+</div>
+
+<% if (!groups.length) { %>
+  <div class="card p-12 text-center border-amber-500/20 bg-[#0f0c08]/60 backdrop-blur-sm">
+    <%- icon('message-square', 'mx-auto h-12 w-12 text-amber-500/40 mb-3') %>
+    <h3 class="font-bold text-lg text-white">No Chat Groups Yet</h3>
+    <p class="text-xs text-[#8a7d63] mt-1">Create your first group and share the invite link with players.</p>
+  </div>
+<% } else { %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <% groups.forEach(function(g) { %>
+      <a href="/host/chats/<%= g._id %>" class="card border-amber-500/20 bg-[#0f0c08]/80 backdrop-blur-sm p-5 hover:border-amber-500/50 transition group">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-black text-white text-base uppercase tracking-tight group-hover:text-amber-300 transition"><%= g.name %></h3>
+          <span class="rounded-full bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 text-[10px] font-black text-amber-400 uppercase">
+            <%= g.memberCount %> members
+          </span>
+        </div>
+        <% if (g.description) { %>
+          <p class="text-xs text-[#8a7d63] mb-3 line-clamp-2"><%= g.description %></p>
+        <% } %>
+        <div class="flex items-center justify-between pt-3 border-t border-amber-500/15 text-[11px] text-[#8a7d63] font-mono">
+          <span><%= g.messageCount %> messages</span>
+          <span><%= g.lastMessageAt ? date(g.lastMessageAt) : 'No messages yet' %></span>
+        </div>
+      </a>
+    <% }) %>
+  </div>
+<% } %>
+
+<%- include('../partials/admin-close') %>
